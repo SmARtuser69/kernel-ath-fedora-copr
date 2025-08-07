@@ -28,6 +28,7 @@ ExclusiveArch:  x86_64
 # The Source0 URL points to a snapshot tarball of the specified git commit.
 # This is generally more reliable for builders like COPR than cloning the repo directly.
 Source0:        https://git.kernel.org/pub/scm/linux/kernel/git/ath/ath.git
+
 # Source1 is the kernel configuration file. You MUST provide this file.
 # You can get a good starting config from the official Fedora kernel source RPM:
 # 1. dnf download --source kernel
@@ -54,6 +55,7 @@ BuildRequires:  zstd
 
 # The main package does not require anything special, as the system tools
 # (like grubby, dracut) will handle the kernel installation.
+Requires: dracut
 
 %description
 This package provides the Linux kernel and modules built from the wireless
@@ -116,5 +118,5 @@ find %{buildroot} -type f -name '*.ko' | xargs strip --strip-debug
 /lib/modules/%{version}-%{release}.%{_arch}/
 
 %changelog
-* Thu Aug 07 2025 Your Name <you@example.com> - 6.10.0-1
+* Thu Aug 07 2025 Bhargavjit Bhuyan <noname@example.com> - 6.10.0-1
 - Initial build from ath.git tree for Fedora 42.

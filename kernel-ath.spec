@@ -27,8 +27,7 @@ ExclusiveArch:  x86_64
 
 # The Source0 URL points to a snapshot tarball of the specified git commit.
 # This is generally more reliable for builders like COPR than cloning the repo directly.
-Source0:        https://git.kernel.org/pub/scm/linux/kernel/git/ath/ath.git/snapshot/%{name}-%{version}-ath-%{githash}.tar.gz
-
+Source0:        https://git.kernel.org/pub/scm/linux/kernel/git/ath/ath.git
 # Source1 is the kernel configuration file. You MUST provide this file.
 # You can get a good starting config from the official Fedora kernel source RPM:
 # 1. dnf download --source kernel

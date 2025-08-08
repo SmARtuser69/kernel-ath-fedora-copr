@@ -11,14 +11,15 @@
 # A temporary macro to hold the unpacked source directory name
 %global ath_source_dir ath-next
 
-# A static Version tag to allow the spec file to be parsed.
-# Replace '6.10.0' with the actual base version of the ath-next branch.
-Version: 6.10.0
-Release: %{ath_release}.ath%{?dist}
-Summary: The Linux kernel with ath-next driver patches
-License: GPL-2.0-only
-URL: https://git.kernel.org/pub/scm/linux/kernel/git/ath/ath.git/
-Source0: https://git.kernel.org/pub/scm/linux/kernel/git/ath/ath.git/snapshot/ath-next.tar.gz
+# --- FIX: Use static Name and Version tags for successful parsing ---
+Name:          kernel-ath
+Version:       6.16.0
+# --- END FIX ---
+Release:       %{ath_release}.ath%{?dist}
+Summary:       The Linux kernel with ath-next driver patches
+License:       GPL-2.0-only
+URL:           https://git.kernel.org/pub/scm/linux/kernel/git/ath/ath.git/
+Source0:       https://git.kernel.org/pub/scm/linux/kernel/git/ath/ath.git/snapshot/ath-next.tar.gz
 
 ExclusiveArch: x86_64
 
@@ -96,9 +97,3 @@ fi
 %changelog
 * Fri Aug 08 2025 Bhargavjit Bhuyan <example@example.com> - %{version}-%{release}
 - Initial kernel package from the ath-next branch for Fedora.
-
-
-
-
-
-

@@ -21,6 +21,11 @@ BuildRequires:  rpm-build
 BuildRequires:  bison
 BuildRequires:  flex
 BuildRequires:  rsync
+BuildRequires:  kmod
+BuildRequires:  rust
+BuildRequires:  bindgen
+BuildRequires:  binutils
+BuildRequires:  flex
 
 ExclusiveArch:  x86_64
 

@@ -8,8 +8,13 @@
 # Use a dynamic approach to versioning
 %global ath_release 1
 
+# Define the base kernel version by getting it from the source
+# The %(...) construct executes a command and uses its output as a value
+%global kernver_base %(make -s -C %{_sourcedir}/ath-next kernelversion)
+%global full_release_string %{kernver_base}-%{ath_release}.ath%{?dist}.%{_arch}
+
 Name:          kernel-ath
-Version:       %(make -s -C %{_sourcedir}/ath-next kernelversion)
+Version:       %{kernver_base}
 Release:       %{ath_release}.ath%{?dist}
 Summary:       The Linux kernel with ath-next driver patches
 License:       GPL-2.0-only
@@ -34,7 +39,6 @@ BuildRequires: python3
 BuildRequires: rsync
 BuildRequires: kmod
 
-# Additional build dependencies for ath-next features
 BuildRequires: gcc-c++
 BuildRequires: rust
 BuildRequires: bindgen
@@ -49,30 +53,34 @@ is intended for testing and development purposes on Fedora systems.
 
 %build
 make defconfig
-make %{?_smp_mflags} LOCALVERSION="-%{release}.%{_arch}"
+make %{?_smp_mflags} LOCALVERSION="-.ath%{ath_release}"
 
 %install
+# Install modules and pass the full version string to get the correct directory name
 make INSTALL_MOD_PATH=%{buildroot} modules_install
 
+# Create boot directory
 install -d %{buildroot}/boot
-install -m 644 arch/x86/boot/bzImage %{buildroot}/boot/vmlinuz-%{version}-%{ath_release}.ath%{?dist}.%{_arch}
-install -m 644 System.map %{buildroot}/boot/System.map-%{version}-%{ath_release}.ath%{?dist}.%{_arch}
-install -m 644 .config %{buildroot}/boot/config-%{version}-%{ath_release}.ath%{?dist}.%{_arch}
+
+# Copy files using a consistent path
+install -m 644 arch/x86/boot/bzImage %{buildroot}/boot/vmlinuz-%{full_release_string}
+install -m 644 System.map %{buildroot}/boot/System.map-%{full_release_string}
+install -m 644 .config %{buildroot}/boot/config-%{full_release_string}
 
 %files
-/boot/vmlinuz-%{version}-%{ath_release}.ath%{?dist}.%{_arch}
-/boot/System.map-%{version}-%{ath_release}.ath%{?dist}.%{_arch}
-/boot/config-%{version}-%{ath_release}.ath%{?dist}.%{_arch}
-/lib/modules/%{version}-%{ath_release}.ath%{?dist}.%{_arch}/
+/boot/vmlinuz-%{full_release_string}
+/boot/System.map-%{full_release_string}
+/boot/config-%{full_release_string}
+/lib/modules/%{kernver_base}-.ath%{ath_release}.%{_arch}
 
 %post
-echo "Running kernel-install script for %{version}-%{ath_release}.ath%{?dist}.%{_arch}..."
-/usr/bin/kernel-install add %{version}-%{ath_release}.ath%{?dist}.%{_arch} /boot/vmlinuz-%{version}-%{ath_release}.ath%{?dist}.%{_arch}
+echo "Running kernel-install script for %{full_release_string}..."
+/usr/bin/kernel-install add %{full_release_string} /boot/vmlinuz-%{full_release_string}
 
 %postun
 if [ $1 -eq 0 ] ; then
-    echo "Running kernel-install remove for %{version}-%{ath_release}.ath%{?dist}.%{_arch}..."
-    /usr/bin/kernel-install remove %{version}-%{ath_release}.ath%{?dist}.%{_arch}
+    echo "Running kernel-install remove for %{full_release_string}..."
+    /usr/bin/kernel-install remove %{full_release_string}
 fi
 
 %changelog

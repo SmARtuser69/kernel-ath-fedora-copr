@@ -41,7 +41,7 @@ BuildRequires: rpm-build
 BuildRequires: perl
 BuildRequires: python3
 BuildRequires: rsync
-BuildRequires: kernel-install-core
+#BuildRequires: kernel-install-core
 BuildRequires: fedora-packager
 BuildRequires: gcc-c++
 BuildRequires: openssl

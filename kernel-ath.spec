@@ -56,5 +56,5 @@ rm -f %{buildroot}/boot/System.map-%{version}
 /lib/modules/%{version}/
 
 %changelog
-* Fri Aug 08 2025 Your Name <you@example.com> - 6.16.0-1
+* Fri Aug 08 2025 Bhargavjit Bhuyan <bhargavjitbhuyan123@gmail.com> - 6.16.0-1
 - Initial build of kernel 6.16.0 for Fedora 42.

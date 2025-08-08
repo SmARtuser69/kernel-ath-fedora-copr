@@ -5,7 +5,7 @@
 # Summary:     The Linux kernel (generic build)
 #
 
-%global kernver 6.9.9
+%global kernver 6.16.0
 %global relver 1
 
 Name:          linux-ath

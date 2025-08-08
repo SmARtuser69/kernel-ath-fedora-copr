@@ -32,9 +32,18 @@ The Linux kernel, the core of the GNU/Linux operating system. This is a
 custom build of version %{kernel_version}.
 
 %prep
-git clone --depth=1 --branch ath-next https://git.kernel.org/pub/scm/linux/kernel/git/ath/ath.git %{name}-%{version}
+#git clone --depth=1 --branch ath-next https://git.kernel.org/pub/scm/linux/kernel/git/ath/ath.git %{name}-%{version}
 #cd linux-ath-next
-tar -czf "%{_sourcedir}/%{name}-%{version}.tar.gz" --exclude-vcs "%{name}-%{version}"
+#tar -czf "%{_sourcedir}/%{name}-%{version}.tar.gz" --exclude-vcs "%{name}-%{version}"
+#%setup -q
+# Clone the repository to get the source code
+git clone --depth 1 https://github.com/SmARtuser69/kernel-ath-fedora-copr.git %{name}-%{version}
+
+# Create a tarball from the cloned repo contents
+# The tarball is saved to the build source directory
+tar -czf %{_sourcedir}/%{name}-%{version}.tar.gz --exclude-vcs %{name}-%{version}
+
+# Unpack the created tarball for the build
 %setup -q
 
 %build

@@ -33,7 +33,8 @@ custom build of version %{kernel_version}.
 
 %prep
 git clone --depth=1 --branch ath-next https://git.kernel.org/pub/scm/linux/kernel/git/ath/ath.git linux-ath-next
-cd linux-ath-next
+#cd linux-ath-next
+tar -czf "%{_sourcedir}/%{name}-%{version}.tar.gz" --exclude-vcs "%{name}-%{version}"
 %setup -q -n linux-%{kernel_version}
 
 %build

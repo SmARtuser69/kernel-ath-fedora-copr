@@ -5,13 +5,14 @@
 # Summary:     The Linux kernel (ath driver patches)
 #
 
-# Use a dynamic approach to versioning
+# Define the base version and release
 %global ath_release 1
 
-# Define the base kernel version by getting it from the source
-# The %(...) construct executes a command and uses its output as a value
+# Get the base kernel version from the source Makefile.
 %global kernver_base %(make -s -C %{_sourcedir}/ath-next kernelversion)
-%global full_release_string %{kernver_base}-%{ath_release}.ath%{?dist}.%{_arch}
+
+# Construct the full, final version string once for consistency.
+%global kernel_full_version %{kernver_base}-%{ath_release}.ath%{?dist}.%{_arch}
 
 Name:          kernel-ath
 Version:       %{kernver_base}
@@ -52,37 +53,40 @@ is intended for testing and development purposes on Fedora systems.
 %setup -q -n ath-next
 
 %build
+# Use make defconfig for a clean build.
 make defconfig
-make %{?_smp_mflags} LOCALVERSION="-.ath%{ath_release}"
+# Fix: Pass the LOCALVERSION string correctly. The kernel build system will add a hyphen.
+# This ensures the final version string matches the desired `6.10.0-1.ath.fc42.x86_64` format.
+make %{?_smp_mflags} LOCALVERSION="-%{ath_release}.ath%{?dist}.%{_arch}"
 
 %install
-# Install modules and pass the full version string to get the correct directory name
+# The modules will be installed to a directory matching the LOCALVERSION.
 make INSTALL_MOD_PATH=%{buildroot} modules_install
 
 # Create boot directory
 install -d %{buildroot}/boot
 
-# Copy files using a consistent path
-install -m 644 arch/x86/boot/bzImage %{buildroot}/boot/vmlinuz-%{full_release_string}
-install -m 644 System.map %{buildroot}/boot/System.map-%{full_release_string}
-install -m 644 .config %{buildroot}/boot/config-%{full_release_string}
+# Copy files using the single, consistent full version string.
+install -m 644 arch/x86/boot/bzImage %{buildroot}/boot/vmlinuz-%{kernel_full_version}
+install -m 644 System.map %{buildroot}/boot/System.map-%{kernel_full_version}
+install -m 644 .config %{buildroot}/boot/config-%{kernel_full_version}
 
 %files
-/boot/vmlinuz-%{full_release_string}
-/boot/System.map-%{full_release_string}
-/boot/config-%{full_release_string}
-/lib/modules/%{kernver_base}-.ath%{ath_release}.%{_arch}
+/boot/vmlinuz-%{kernel_full_version}
+/boot/System.map-%{kernel_full_version}
+/boot/config-%{kernel_full_version}
+/lib/modules/%{kernel_full_version}/
 
 %post
-echo "Running kernel-install script for %{full_release_string}..."
-/usr/bin/kernel-install add %{full_release_string} /boot/vmlinuz-%{full_release_string}
+echo "Running kernel-install script for %{kernel_full_version}..."
+/usr/bin/kernel-install add %{kernel_full_version} /boot/vmlinuz-%{kernel_full_version}
 
 %postun
 if [ $1 -eq 0 ] ; then
-    echo "Running kernel-install remove for %{full_release_string}..."
-    /usr/bin/kernel-install remove %{full_release_string}
+    echo "Running kernel-install remove for %{kernel_full_version}..."
+    /usr/bin/kernel-install remove %{kernel_full_version}
 fi
 
 %changelog
-* Fri Aug 08 2025 Bhargavjit Bhuyan <example@example.com> - 6.10.0-1.ath.fc42
+* Fri Aug 08 2025 Bhargavjit Bhuyan <example@example.com> - %{version}-%{release}
 - Initial kernel package from the ath-next branch for Fedora.

@@ -8,7 +8,7 @@ Summary:        The Linux Kernel %{kernel_version}
 
 License:        GPLv2
 URL:            https://www.kernel.org/
-Source0:        %{name}-%{version}.tar.gz
+Source0:        linux.tar.gz
 
 BuildRequires:  gcc
 BuildRequires:  make
@@ -32,11 +32,11 @@ custom build of version %{kernel_version}.
 
 %prep
 # Clone the repository to get the source code
-git clone --depth 1 https://git.kernel.org/pub/scm/linux/kernel/git/ath/ath.git %{name}-%{version}
+git clone --depth 1 https://git.kernel.org/pub/scm/linux/kernel/git/ath/ath.git linux
 
 # Create a tarball from the cloned repo contents
 # The tarball is saved to the build source directory
-tar -czf %{_sourcedir}/%{name}-%{version}.tar.gz --exclude-vcs %{name}-%{version}
+tar -czf linux.tar.gz --exclude-vcs linux
 
 # Unpack the created tarball for the build
 %setup -q

@@ -8,23 +8,29 @@
 # Define the base version and release
 %global ath_release 1
 
-# Get the base kernel version from the source Makefile.
-%global kernver_base %(make -s -C %{_sourcedir}/ath-next kernelversion)
+# A temporary macro to hold the unpacked source directory name
+%global ath_source_dir ath-next
 
-# Construct the full, final version string once for consistency.
-%global kernel_full_version %{kernver_base}-%{ath_release}.ath%{?dist}.%{_arch}
-
-Name:          kernel-ath
-Version:       %{kernver_base}
-Release:       %{ath_release}.ath%{?dist}
-Summary:       The Linux kernel with ath-next driver patches
-License:       GPL-2.0-only
-URL:           https://git.kernel.org/pub/scm/linux/kernel/git/ath/ath.git/
-Source0:       https://git.kernel.org/pub/scm/linux/kernel/git/ath/ath.git/snapshot/ath-next.tar.gz
+# A static Version tag to allow the spec file to be parsed.
+# Replace '6.10.0' with the actual base version of the ath-next branch.
+Version: 6.10.0
+Release: %{ath_release}.ath%{?dist}
+Summary: The Linux kernel with ath-next driver patches
+License: GPL-2.0-only
+URL: https://git.kernel.org/pub/scm/linux/kernel/git/ath/ath.git/
+Source0: https://git.kernel.org/pub/scm/linux/kernel/git/ath/ath.git/snapshot/ath-next.tar.gz
 
 ExclusiveArch: x86_64
 
 %global debug_package %{nil}
+
+# Get the base kernel version from the source Makefile.
+# This macro is now safe to use because it runs inside the build sandbox.
+%global kernver_base %(make -s -C %{_sourcedir}/%{ath_source_dir} kernelversion)
+
+# Construct the full, final version string once for consistency.
+%global kernel_full_version %{kernver_base}-.ath%{ath_release}%{?dist}.%{_arch}
+
 
 BuildRequires: gcc
 BuildRequires: make
@@ -50,14 +56,14 @@ the latest patches and features for Atheros wireless drivers. This package
 is intended for testing and development purposes on Fedora systems.
 
 %prep
-%setup -q -n ath-next
+%setup -q -n %{ath_source_dir}
 
 %build
 # Use make defconfig for a clean build.
 make defconfig
-# Fix: Pass the LOCALVERSION string correctly. The kernel build system will add a hyphen.
-# This ensures the final version string matches the desired `6.10.0-1.ath.fc42.x86_64` format.
-make %{?_smp_mflags} LOCALVERSION="-%{ath_release}.ath%{?dist}.%{_arch}"
+# Pass the LOCALVERSION string that will produce the correct directory name.
+# The kernel build system will append this to the base version.
+make %{?_smp_mflags} LOCALVERSION="-.ath%{ath_release}%{?dist}.%{_arch}"
 
 %install
 # The modules will be installed to a directory matching the LOCALVERSION.
@@ -90,3 +96,9 @@ fi
 %changelog
 * Fri Aug 08 2025 Bhargavjit Bhuyan <example@example.com> - %{version}-%{release}
 - Initial kernel package from the ath-next branch for Fedora.
+
+
+
+
+
+

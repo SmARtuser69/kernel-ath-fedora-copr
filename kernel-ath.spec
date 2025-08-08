@@ -26,6 +26,12 @@ BuildRequires:  rust
 BuildRequires:  bindgen
 BuildRequires:  binutils
 BuildRequires:  flex
+BuildRequires:  openssl
+BuildRequires:  openssl-devel
+BuildRequires:  openssl-devel-engine
+BuildRequires:  qt3-devel
+BuildRequires:  libXi-devel
+BuildRequires:  gcc-c++
 
 ExclusiveArch:  x86_64
 

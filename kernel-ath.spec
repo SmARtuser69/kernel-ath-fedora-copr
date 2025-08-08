@@ -9,7 +9,7 @@ Summary:        The Linux Kernel %{kernel_version}
 License:        GPLv2
 URL:            https://www.kernel.org/
 #Source0:        https://git.kernel.org/pub/scm/linux/kernel/git/ath/ath.git
-Source0: %{name}-%{version}.git
+Source0:        %{name}-%{version}.git
 
 BuildRequires:  gcc
 BuildRequires:  make
@@ -37,7 +37,7 @@ custom build of version %{kernel_version}.
 #tar -czf "%{_sourcedir}/%{name}-%{version}.tar.gz" --exclude-vcs "%{name}-%{version}"
 #%setup -q
 # Clone the repository to get the source code
-git clone --depth 1 https://github.com/SmARtuser69/kernel-ath-fedora-copr.git %{name}-%{version}
+git clone --depth 1 https://git.kernel.org/pub/scm/linux/kernel/git/ath/ath.git %{name}-%{version}
 
 # Create a tarball from the cloned repo contents
 # The tarball is saved to the build source directory

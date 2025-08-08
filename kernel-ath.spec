@@ -43,7 +43,7 @@ custom build of version %{kernel_version}.
 # The tarball is saved to the build source directory
 ###tar -czf %{_sourcedir}/%{name}-%{version}.tar.gz --exclude-vcs %{name}-%{version}
 # Unpack the created tarball for the build
-%autosetup -n ath-next
+%autosetup
 #cd ath-next
 
 %build

@@ -10,7 +10,7 @@
 
 Name:          linux-ath
 Version:       %{kernver}
-Release:       %{relver}.copr%{?dist}
+Release:       %{relver}.%{?dist}
 Summary:       The Linux kernel (generic config build)
 License:       GPL-2.0-only
 URL:           https://www.kernel.org/

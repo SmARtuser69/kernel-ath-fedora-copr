@@ -8,7 +8,7 @@ Summary:        The Linux Kernel %{kernel_version}
 
 License:        GPLv2
 URL:            https://www.kernel.org/
-Source0:        https://git.kernel.org/pub/scm/linux/kernel/git/ath/ath.tar.gz
+Source0:        https://git.kernel.org/pub/scm/linux/kernel/git/ath/ath.git
 
 BuildRequires:  gcc
 BuildRequires:  make

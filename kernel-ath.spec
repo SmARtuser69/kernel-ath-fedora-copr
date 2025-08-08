@@ -8,7 +8,7 @@
 %global kernver 6.16.0
 %global relver 1
 
-Name:          linux-ath
+Name:          kernel-ath
 Version:       %{kernver}
 Release:       %{relver}%{?dist}
 Summary:       The Linux kernel (generic config build)

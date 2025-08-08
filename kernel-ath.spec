@@ -32,10 +32,10 @@ The Linux kernel, the core of the GNU/Linux operating system. This is a
 custom build of version %{kernel_version}.
 
 %prep
-git clone --depth=1 --branch ath-next https://git.kernel.org/pub/scm/linux/kernel/git/ath/ath.git linux-ath-next
+git clone --depth=1 --branch ath-next https://git.kernel.org/pub/scm/linux/kernel/git/ath/ath.git %{name}-%{version}
 #cd linux-ath-next
 tar -czf "%{_sourcedir}/%{name}-%{version}.tar.gz" --exclude-vcs "%{name}-%{version}"
-%setup -q -n linux-%{kernel_version}
+%setup -q
 
 %build
 # Generate the default configuration for x86_64

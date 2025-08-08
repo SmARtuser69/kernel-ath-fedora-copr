@@ -43,6 +43,15 @@ BuildRequires: python3
 BuildRequires: rsync
 BuildRequires: kernel-install-core
 BuildRequires: fedora-packager
+BuildRequires: gcc-c++
+BuildRequires: openssl
+BuildRequires: openssl-devel-engine
+BuildRequires: rust
+BuildRequires: bindgen
+BuildRequires: qt3-devel
+BuildRequires: libXi-devel
+BuildRequires: kmod
+
 
 %description
 The Linux kernel, the core of the operating system. This package contains a (generic) build of the Linux kernel + ath driver patches, without Fedora-specific patches.
@@ -122,5 +131,5 @@ if [ $1 -eq 0 ] ; then
 fi
 
 %changelog
-* Fri Aug 08 2025 Your Name <your@email.com> - 6.9.9-1.copr
-- Initial generic kernel spec for Fedora COPR.
+* Fri Aug 08 2025 Bhargavjit Bhuyan <example@example.com> - 6.9.9-1.copr
+- Initial ath kernel spec for Fedora COPR.

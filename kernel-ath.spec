@@ -36,7 +36,7 @@ BuildRequires:  flex
 BuildRequires:  bison
 BuildRequires:  openssl-devel
 BuildRequires:  elfutils-libelf-devel
-BuildRequires:  zstd-devel
+#BuildRequires:  zstd-devel
 BuildRequires:  dwarves
 BuildRequires:  perl-interpreter
 BuildRequires:  python3

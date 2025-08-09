@@ -15,6 +15,8 @@
 
 # The git commit hash is used to create a unique version string.
 %define short_commit 19272b37aa4f83ca52bdf9c16d5d81bdd1354494
+# This LOCALVERSION will be used by the kernel build process.
+%define kernel_localversion -%{custom_release}.%{short_commit}
 %define kernel_version 6.16.0
 %define custom_release aspm_fix_1
 Name:          kernel-ath
@@ -102,7 +104,7 @@ make olddefconfig
 # Build the kernel image and modules.
 # %{?_smp_mflags} is the RPM macro for parallel building (like -j`nproc`).
 echo "--- Building kernel and modules ---"
-make %{?_smp_mflags} bzImage modules
+make %{?_smp_mflags} LOCALVERSION=%{kernel_localversion} bzImage modules
 
 # --- %install: Install the compiled files ---
 # This section copies the built kernel and modules into a temporary
@@ -110,7 +112,7 @@ make %{?_smp_mflags} bzImage modules
 %install
 echo "--- Installing kernel and modules to buildroot ---"
 # Install the modules
-make INSTALL_MOD_PATH=%{buildroot} modules_install
+make INSTALL_MOD_PATH=%{buildroot} LOCALVERSION=%{kernel_localversion} modules_install
 
 # Install the kernel image, System.map, and .config file
 install -d %{buildroot}/boot
@@ -138,7 +140,7 @@ echo "--- Running kernel-install to remove the old kernel ---"
 /boot/vmlinuz-%{version}-%{release}
 /boot/System.map-%{version}-%{release}
 /boot/config-%{version}-%{release}
-/lib/modules/%{version}-%{release}/
+/lib/modules/%{version}%{kernel_localversion}/
 
 # --- %changelog: Record of changes to the spec file ---
 %changelog

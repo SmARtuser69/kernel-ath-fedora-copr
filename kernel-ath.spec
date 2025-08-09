@@ -64,7 +64,7 @@ This build is intended for testing purposes only.
 %prep
 # The standard RPM macro to unpack the source tarball.
 # This automatically changes the current directory to the source tree.
-%setup -q
+%setup -q -n linux-%{short_commit}
 
 # We initialize a git repo here to apply the patch with 'git am'.
 echo "--- Initializing git repo for patch application ---"
@@ -144,7 +144,7 @@ echo "--- Running kernel-install to remove the old kernel ---"
 # --- %changelog: Record of changes to the spec file ---
 %changelog
 * Fri Aug 09 2024 Gemini <gemini@google.com> - 6.16.0-aspm_fix_1.19272b37aa4f83ca52bdf9c16d5d81bdd1354494
-- Corrected spec file to fix git commit error.
+- Corrected spec file to fix directory not found error in prep section.
 * Fri Aug 09 2024 Gemini <gemini@google.com> - 6.10.0-rc2.aspm_fix_1.19272b37
 - Switched to using 'b4 am' to fetch patch as requested by user.
 - Added user-requested build dependencies.

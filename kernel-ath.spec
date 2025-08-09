@@ -22,8 +22,8 @@ Version:       %{kernel_version}
 Release:       %{custom_release}.%{short_commit}%{?dist}
 Summary:       Custom Linux kernel with Qualcomm Atheros ASPM patch
 License:       GPL-2.0-only
-URL:           https://github.com/torvalds/linux
-Source0:       https://github.com/torvalds/linux/archive/%{short_commit}/linux-%{short_commit}.tar.gz
+URL:           https://github.com/torvalds/linux/
+Source0:       https://github.com/torvalds/linux/archive/%{short_commit}.tar.gz
 
 # --- Build Dependencies ---
 # These are the packages needed to build the kernel.
@@ -48,7 +48,7 @@ BuildRequires: gawk
 BuildRequires: libselinux-devel
 BuildRequires: libzstd-devel
 BuildRequires: zstd
-BuildRequires: python3-pip
+BuildRequires: python3-b4
 
 %description
 This package provides a custom-built Linux kernel based on version %{version}-%{release}.
@@ -66,23 +66,21 @@ This build is intended for testing purposes only.
 # This automatically changes the current directory to the source tree.
 %setup -q -n linux-%{short_commit}
 
-# We initialize a git repo here to apply the patch with 'git am'.
+# The following steps initialize a git repository and apply a patch.
 echo "--- Initializing git repo for patch application ---"
 git init
-# Set a user name and email for the git commit within the build environment
+git add .
 git config user.email "mockbuild@localhost"
 git config user.name "Mock Build"
-git add .
 git commit -m "Initial commit of Linux source from tarball"
-
-# Install the 'b4' tool to fetch the patch from the mailing list.
-echo "--- Installing b4 tool ---"
-pip3 install b4
 
 # Use 'b4 am' to download the patch as requested.
 # This relies on an external network connection during the build.
 echo "--- Fetching patch with b4 ---"
-b4 am 20250716-ath-aspm-fix-v1-0-dd3e62c1b692@oss.qualcomm.com && mv *.mbx aspm-patch.mbx
+b4 am 20250716-ath-aspm-fix-v1-0-dd3e62c1b692@oss.qualcomm.com
+
+# Move the downloaded mailbox file to a predictable name
+mv *.mbx aspm-patch.mbx
 
 echo "--- Applying ASPM patch ---"
 git am -3 aspm-patch.mbx
@@ -145,6 +143,7 @@ echo "--- Running kernel-install to remove the old kernel ---"
 %changelog
 * Fri Aug 09 2024 Gemini <gemini@google.com> - 6.16.0-aspm_fix_1.19272b37aa4f83ca52bdf9c16d5d81bdd1354494
 - Corrected spec file to fix directory not found error in prep section.
+- Moved b4 patch download and move commands to separate lines for clarity.
 * Fri Aug 09 2024 Gemini <gemini@google.com> - 6.10.0-rc2.aspm_fix_1.19272b37
 - Switched to using 'b4 am' to fetch patch as requested by user.
 - Added user-requested build dependencies.

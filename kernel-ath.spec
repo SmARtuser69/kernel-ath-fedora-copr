@@ -121,7 +121,7 @@ build applications that use the kernel tools.
 
 %prep
 %setup -q -n linux-%{kernel_version}
-%patch0 -p1
+%patch 0 -p1
 
 %build
 # Use the default configuration
@@ -168,60 +168,3 @@ objcopy --only-keep-debug vmlinux %{buildroot}/usr/lib/debug/lib/modules/%{_modn
 strip -g vmlinux
 objcopy --add-gnu-debuglink=%{buildroot}/usr/lib/debug/lib/modules/%{_modname}/vmlinux.debug vmlinux
 find %{buildroot}/lib/modules/%{_modname} -name "*.ko" -exec objcopy --only-keep-debug {} {}.debug \;
-find %{buildroot}/lib/modules/%{_modname} -name "*.ko" -exec strip -g {} \;
-
-%post
-# Use grubby to manage bootloader entries
-grubby --add-kernel=/boot/vmlinuz-%{_kernel_release_name} \
-       --title="Linux Kernel %{_kernel_release_name}" \
-       --copy-default \
-       --make-default
-
-%preun
-if [ $1 -eq 0 ]; then
-    grubby --remove-kernel=/boot/vmlinuz-%{_kernel_release_name}
-fi
-
-%files
-/boot/vmlinuz-%{_kernel_release_name}
-/boot/System.map-%{_kernel_release_name}
-/boot/config-%{_kernel_release_name}
-/lib/modules/%{_modname}/
-
-%files headers
-/usr/src/kernels/%{_modname}/include/
-/usr/src/kernels/%{_modname}/arch/x86/include/
-
-%files devel
-/usr/src/kernels/%{_modname}/.config
-/usr/src/kernels/%{_modname}/Module.symvers
-/usr/src/kernels/%{_modname}/scripts/
-/usr/src/kernels/%{_modname}/vmlinux
-
-%files debug
-# The debug kernel itself
-/boot/vmlinuz-%{_kernel_release_name}
-
-%files debuginfo
-# Debug symbols for the kernel and modules
-/usr/lib/debug/lib/modules/%{_modname}/
-
-%files firmware
-/lib/firmware/
-
-%files doc
-/usr/share/doc/%{_kernel_name}-%{version}/
-
-%files tools
-# List the specific kernel tools to be installed
-/usr/bin/perf
-/usr/bin/cpupower
-/usr/bin/turbostat
-
-%files tools-devel
-# List the specific development files for the tools
-/usr/include/perf/
-
-%changelog
-* Sat Aug 09 2025 Bhargavjit Bhuyan <example@example.com> - 6.16.0-1
-- Initial build of mainline kernel 6.16.0 for Fedora COPR.

@@ -22,6 +22,7 @@ Summary:        The Linux kernel (mainline)
 License:        GPLv2
 URL:            https://www.kernel.org/
 Source0:        https://git.kernel.org/pub/scm/linux/kernel/git/ath/ath.git/snapshot/ath-main.tar.gz
+Conflicts:      %{name} < %{version}-%{release}
 
 BuildRequires:  gcc
 BuildRequires:  make
@@ -69,6 +70,7 @@ glibc to build user-space applications.
 %package devel
 Summary:        Development files for the Linux kernel
 Requires:       kernel-headers = %{version}-%{release}
+Provides:       kernel-devel = %{version}-%{release}
 %description devel
 This package provides the development files needed to build external kernel
 modules.
@@ -148,17 +150,14 @@ cp -a Documentation/* %{buildroot}/usr/share/doc/%{_kernel_name}-%{version}/
 # Install kernel tools and devel
 make -C tools DESTDIR=%{buildroot} install
 
-# Generate debug symbols
-mkdir -p %{buildroot}/usr/lib/debug/lib/modules/%{_kernel_release_name}
+# Generate debug symbols and strip binaries
+mkdir -p %{buildroot}/usr/lib/debug
 cp vmlinux %{buildroot}/usr/lib/debug/vmlinux-%{_kernel_release_name}.debug
 strip --strip-debug vmlinux
 objcopy --add-gnu-debuglink=%{buildroot}/usr/lib/debug/vmlinux-%{_kernel_release_name}.debug vmlinux
 ln -s ../../lib/modules/%{_kernel_release_name}/vmlinux %{buildroot}/usr/src/kernels/%{_kernel_release_name}/vmlinux
 
-find %{buildroot}/lib/modules/%{_kernel_release_name} -name "*.ko" -exec objcopy --only-keep-debug {} {}.debug \;
-find %{buildroot}/lib/modules/%{_kernel_release_name} -name "*.ko" -exec strip --strip-debug --strip-unneeded {} \;
-mkdir -p %{buildroot}/usr/lib/debug/lib/modules/%{_kernel_release_name}/
-find %{buildroot}/lib/modules/%{_kernel_release_name} -name "*.ko.debug" -exec mv {} %{buildroot}/usr/lib/debug/lib/modules/%{_kernel_release_name}/ \;
+find %{buildroot}/lib/modules/%{_kernel_release_name} -name "*.ko" -print0 | xargs -0 -I{} sh -c "objcopy --only-keep-debug {} {}_debug && strip --strip-debug --strip-unneeded {} && mv {}_debug %{buildroot}/usr/lib/debug/lib/modules/%{_kernel_release_name}/"
 
 %post
 grubby --add-kernel=/boot/vmlinuz-%{_kernel_release_name} \
@@ -200,11 +199,11 @@ grubby --remove-kernel=/boot/vmlinuz-%{_kernel_release_name}
 
 %files firmware
 %defattr(-,root,root,-)
-/lib/firmware/*
+/lib/firmware/
 
 %files doc
 %defattr(-,root,root,-)
-/usr/share/doc/%{_kernel_name}-%{version}/*
+/usr/share/doc/%{_kernel_name}-%{version}/
 
 %files tools
 %defattr(-,root,root,-)

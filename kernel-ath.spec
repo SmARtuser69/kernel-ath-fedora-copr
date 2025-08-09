@@ -44,10 +44,15 @@ BuildRequires:  python3
 BuildRequires:  bc
 BuildRequires:  rsync
 BuildRequires:  kernel-install
+BuildRequires:  rust
+BuildRequires:  openssl-devel-engine
+BuildRequires:  kmod
+BuildRequires:  gcc-c++
+BuildRequires:  binutils
+BuildRequires:  bindgen
 # Dependencies for b4 tool and graphical config tools
 BuildRequires:  python3-pip
-BuildRequires:  qt3-devel
-BuildRequires:  libXi-devel
+
 
 
 %description

@@ -46,6 +46,9 @@ BuildRequires:  python3-pyelftools
 BuildRequires:  elfutils-devel
 BuildRequires:  newt-devel
 BuildRequires:  pahole
+BuildRequires:  libaio-devel
+BuildRequires:  numactl-devel
+BuildRequires:  audit-libs-devel
 
 ExclusiveArch:  x86_64
 
@@ -197,11 +200,11 @@ grubby --remove-kernel=/boot/vmlinuz-%{_kernel_release_name}
 
 %files firmware
 %defattr(-,root,root,-)
-%{_prefix}/lib/firmware/*
+/lib/firmware/*
 
 %files doc
 %defattr(-,root,root,-)
-%{_prefix}/share/doc/%{_kernel_name}-%{version}/*
+/usr/share/doc/%{_kernel_name}-%{version}/*
 
 %files tools
 %defattr(-,root,root,-)

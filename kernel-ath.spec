@@ -23,9 +23,7 @@ Release:        %{release_version}.%{patchlevel}%{?dist}
 Summary:        The Linux kernel (mainline)
 License:        GPLv2
 URL:            https://www.kernel.org/
-Source0:        https://cdn.kernel.org/pub/linux/kernel/v%{mainline_version}.x/linux-%{kernel_version}.tar.xz
-Source1:        010-ath-patch.patch
-Patch0:         %{SOURCE1}
+Source0:        https://git.kernel.org/pub/scm/linux/kernel/git/ath/ath.git/snapshot/ath-main.tar.gz
 
 BuildRequires:  gcc
 BuildRequires:  make
@@ -120,8 +118,7 @@ This package provides the development files (headers, libraries) needed to
 build applications that use the kernel tools.
 
 %prep
-%setup -q -n linux-%{kernel_version}
-%patch 0 -p1
+%setup -q -n ath-main
 
 %build
 # Use the default configuration

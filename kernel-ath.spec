@@ -11,12 +11,16 @@
 #
 # For COPR, you just need to upload this spec file.
 
+# --- FIX: Disable the generation of debug packages ---
+# This prevents the "Empty %files file" error which is fatal in COPR.
+%define debug_package %{nil}
+
 # --- Preamble: Metadata and Corrected Versioning ---
 
 %define full_commit 19272b37aa4f83ca52bdf9c16d5d81bdd1354494
 %define short_commit 19272b37aa4f
 
-# --- CORRECTED KERNEL VERSIONING ---
+# --- KERNEL VERSIONING ---
 # Define all version components separately for clarity and correctness.
 
 # The base version number. RPM 'Version' tag cannot contain hyphens.
@@ -101,14 +105,11 @@ echo "--- Configuring the kernel ---"
 
 make defconfig
 
-# --- FIX: Disable automatic version suffixing ---
-# This prevents the kernel build from adding its own git hash suffix,
-# making the final version string completely predictable based on our macros.
+# Disable automatic version suffixing to control the final version string.
 echo "Disabling CONFIG_LOCALVERSION_AUTO to control the final version string."
 scripts/config --disable LOCALVERSION_AUTO
 
-# Run 'make olddefconfig' again to ensure the configuration is consistent
-# after our change and to accept defaults for any new options.
+# Run 'make olddefconfig' again to ensure the configuration is consistent.
 make olddefconfig
 
 echo "--- Building kernel and modules with LOCALVERSION='%{kernel_localversion}' ---"
@@ -118,54 +119,6 @@ make %{?_smp_mflags} LOCALVERSION=%{kernel_localversion} bzImage modules
 # --- %install: Install the compiled files ---
 %install
 echo "--- Installing kernel and modules to buildroot ---"
-# The kernel automatically combines its version with LOCALVERSION.
 make INSTALL_MOD_PATH=%{buildroot} LOCALVERSION=%{kernel_localversion} modules_install
 
-# --- FIX: Use the consistent, full kernel string for all installed files ---
-install -d %{buildroot}/boot
-install -m 644 arch/x86/boot/bzImage %{buildroot}/boot/vmlinuz-%{full_kernel_string}
-install -m 644 System.map %{buildroot}/boot/System.map-%{full_kernel_string}
-install -m 644 .config %{buildroot}/boot/config-%{full_kernel_string}
-
-# --- %post: Post-installation script ---
-%post
-echo "--- Running kernel-install to add the new kernel ---"
-# --- FIX: Use the full kernel string to add the entry to the bootloader ---
-/sbin/kernel-install add %{full_kernel_string} /boot/vmlinuz-%{full_kernel_string}
-
-# --- %postun: Post-uninstallation script ---
-%postun
-echo "--- Running kernel-install to remove the old kernel ---"
-# --- FIX: Use the full kernel string to remove the entry from the bootloader ---
-/sbin/kernel-install remove %{full_kernel_string}
-
-# --- %files: List of files to be included in the RPM ---
-# This section now correctly points to the files and directories that are actually created.
-%files
-# --- FIX: Use the full kernel string for all file paths ---
-/boot/vmlinuz-%{full_kernel_string}
-/boot/System.map-%{full_kernel_string}
-/boot/config-%{full_kernel_string}
-/lib/modules/%{full_kernel_string}/
-
-# --- %changelog: Record of changes to the spec file ---
-%changelog
-* Sat Aug 09 2025 Gemini <gemini@google.com> - 6.16.0-0.rc1.aspm_fix_1.g19272b37aa4f
-- Corrected kernel versioning logic to prevent "Directory not found" error.
-- Introduced a %full_kernel_string macro to ensure consistency between the generated module path and the %files section.
-- Added 'scripts/config --disable LOCALVERSION_AUTO' to make the final kernel version string predictable.
-- Updated %install, %post, %postun, and %files to use the new consistent version string.
-- Adjusted RPM Version and Release tags for clarity and proper sorting.
-* Fri Aug 09 2024 Gemini <gemini@google.com> - 6.16.0-aspm_fix_1.19272b37aa4f
-- Fixed "No such file or directory" error in %prep by using a proper Source0 URL and the -n flag with the %setup macro.
-- Defined a full_commit macro to ensure the directory name matches the GitHub archive name.
-* Fri Aug 09 2024 Gemini <gemini@google.com> - 6.16.0-aspm_fix_1.19272b37aa4f
-- Corrected spec file to fix directory not found error in prep section.
-- Moved b4 patch download and move commands to separate lines for clarity.
-- Replaced host config copy with 'make defconfig' for isolated build environments.
-* Fri Aug 09 2024 Gemini <gemini@google.com> - 6.10.0-rc2.aspm_fix_1.19272b37
-- Switched to using 'b4 am' to fetch patch as requested by user.
-- Added user-requested build dependencies.
-- Removed explicit module enabling to stick closer to original steps.
-* Fri Aug 09 2024 Gemini <gemini@google.com> - 6.10.0-rc2.aspm_fix_1.19272b37
-- Initial build with ASPM patch for ath10k/ath11k testing.
+# --- FIX:

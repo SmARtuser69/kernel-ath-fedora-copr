@@ -1,157 +1,227 @@
-# This is a spec file for building a custom Linux kernel with a specific patch
-# for ath10k WiFi driver testing. It has been corrected for COPR builds.
+# Spec file for building a mainline Linux kernel with all standard Fedora packages.
+# This file uses the kernel's default configuration, suitable for personal builds
+# or testing where a custom config isn't required.
 #
-# Author: Gemini
-# Date: 2025-08-09
+# Author: Bhargavjit Bhuyan
+#
 
-# Disable the generation of debug packages.
-%define debug_package %{nil}
+%define         mainline_version 6
+%define         mainline_subversion 16
+%define         kernel_version %{mainline_version}.%{mainline_subversion}
+%define         patchlevel 0
+%define         release_version 1
 
-# --- Preamble: Metadata and Versioning ---
+# Use macros for better portability and consistency
+%global _kernel_name kernel-mainline-ath
+%global _kernel_release_name %{version}-%{release}
+%global _kernel_arch_dir arch/%{_arch_dir}
+%global _modname %{_kernel_release_name}
 
-%define full_commit 19272b37aa4f83ca52bdf9c16d5d81bdd1354494
-%define short_commit 19272b37aa4f
+Name:           %{_kernel_name}
+Version:        %{kernel_version}
+Release:        %{release_version}.%{patchlevel}%{?dist}
+Summary:        The Linux kernel (mainline)
+License:        GPLv2
+URL:            https://www.kernel.org/
+Source0:        https://cdn.kernel.org/pub/linux/kernel/v%{mainline_version}.x/linux-%{kernel_version}.tar.xz
+Source1:        010-ath-patch.patch
+Patch0:         %{SOURCE1}
 
-# --- KERNEL VERSIONING ---
-%define kernel_base_ver 6.16.0
-%define kernel_extra_ver rc1
-%define custom_id aspm_fix_1
-%define kernel_localversion -%{custom_id}.g%{short_commit}
-%define full_kernel_string %{kernel_base_ver}-%{kernel_extra_ver}%{kernel_localversion}
+BuildRequires:  gcc
+BuildRequires:  make
+BuildRequires:  perl
+BuildRequires:  python3
+BuildRequires:  bc
+BuildRequires:  elfutils-libelf-devel
+BuildRequires:  ncurses-devel
+BuildRequires:  openssl-devel
+BuildRequires:  rpm-build
+BuildRequires:  bison
+BuildRequires:  flex
+BuildRequires:  rsync
+BuildRequires:  python3-devel
+BuildRequires:  openssl-devel
+BuildRequires:  grubby
+BuildRequires:  kmod
+BuildRequires:  xz
+BuildRequires:  zlib-devel
+BuildRequires:  libcap-devel
+BuildRequires:  glibc-devel
+BuildRequires:  python3-pyelftools
+BuildRequires:  elfutils-devel
+BuildRequires:  newt-devel
 
-Name:           kernel-ath
-Version:        %{kernel_base_ver}
-Release:        0.%{kernel_extra_ver}.%{custom_id}.g%{short_commit}%{?dist}
-Summary:        Custom Linux kernel with Qualcomm Atheros ASPM patch
-License:        GPL-2.0-only
-URL:            https://github.com/torvalds/linux/
-Source0:        https://github.com/torvalds/linux/archive/%{full_commit}.tar.gz
-
-# --- Build Dependencies ---
-BuildRequires: gcc
-BuildRequires: gcc-c++
-BuildRequires: make
-BuildRequires: git
-BuildRequires: flex
-BuildRequires: bison
-BuildRequires: openssl-devel
-BuildRequires: elfutils-libelf-devel
-BuildRequires: dwarves
-BuildRequires: perl-interpreter
-BuildRequires: python3
-BuildRequires: bc
-BuildRequires: rsync
-BuildRequires: rust-packaging
-BuildRequires: kmod
-BuildRequires: binutils
-BuildRequires: bindgen
-BuildRequires: gawk
-BuildRequires: libselinux-devel
-BuildRequires: libzstd-devel
-BuildRequires: zstd
-BuildRequires: gpg
-BuildRequires: python3-b4
+ExclusiveArch:  x86_64
 
 %description
-This package provides a custom-built Linux kernel based on git commit %{short_commit}.
-It includes a patch to fix Active State Power Management (ASPM) issues with some
-Qualcomm Atheros (ath10k/ath11k) wireless devices.
+The Linux kernel, the core of the Linux operating system. This package
+contains the mainline kernel, compiled with a default configuration and a custom patch.
 
-This build is intended for testing purposes only. The final kernel release string is %{full_kernel_string}.
+# Kernel headers subpackage
+%package headers
+Summary:        Header files for the Linux kernel
+BuildArch:      noarch
+Provides:       kernel-headers = %{version}-%{release}
+%description headers
+This package provides the kernel header files. These header files are used by
+glibc to build user-space applications.
 
-# --- %prep: Prepare the source code ---
+# Kernel devel subpackage
+%package devel
+Summary:        Development files for the Linux kernel
+Requires:       kernel-headers = %{version}-%{release}
+%description devel
+This package provides the development files needed to build external kernel
+modules.
+
+# Kernel debug subpackage
+%package debug
+Summary:        The Linux kernel with debug symbols
+Requires:       %{_kernel_name} = %{version}-%{release}
+%description debug
+This package contains the debug version of the Linux kernel, with extra symbols
+and debug information to aid in kernel debugging.
+
+# Kernel debuginfo subpackage
+%package debuginfo
+Summary:        Debug symbols for the Linux kernel
+BuildArch:      noarch
+Requires:       %{_kernel_name} = %{version}-%{release}
+%description debuginfo
+This package provides debug symbols for the Linux kernel and its modules.
+
+# Firmware subpackage
+%package firmware
+Summary:        Firmware files for the Linux kernel
+BuildArch:      noarch
+%description firmware
+This package contains the firmware binary blobs required by the Linux kernel.
+
+# Documentation subpackage
+%package doc
+Summary:        Documentation for the Linux kernel
+BuildArch:      noarch
+%description doc
+This package contains the documentation for the Linux kernel.
+
+# Tools subpackage
+%package tools
+Summary:        Tools for the Linux kernel
+%description tools
+This package contains user-space tools for interacting with the Linux kernel,
+such as perf, cpupower, and turbostat.
+
+# Tools devel subpackage
+%package tools-devel
+Summary:        Development files for the Linux kernel tools
+Requires:       %{_kernel_name}-tools = %{version}-%{release}
+%description tools-devel
+This package provides the development files (headers, libraries) needed to
+build applications that use the kernel tools.
+
 %prep
-%setup -q -n linux-%{full_commit}
+%setup -q -n linux-%{kernel_version}
+%patch0 -p1
 
-echo "--- Initializing git repo for patch application ---"
-git init -b main
-git add .
-git config user.email "mockbuild@localhost"
-git config user.name "Mock Build"
-git commit -m "Initial commit of Linux source from tarball"
-
-echo "--- Fetching patch with b4 ---"
-b4 am 20250716-ath-aspm-fix-v1-0-dd3e62c1b692@oss.qualcomm.com
-
-echo "--- Applying ASPM patch ---"
-git am -3 *.mbx
-
-
-# --- %build: Compile the kernel ---
 %build
-echo "--- Configuring the kernel ---"
+# Use the default configuration
 make defconfig
 
-echo "Disabling CONFIG_LOCALVERSION_AUTO to control the final version string."
-scripts/config --disable LOCALVERSION_AUTO
-make olddefconfig
+# Compile the kernel
+NPROCS=$(/usr/bin/getconf _NPROCESSORS_ONLN)
+make -j${NPROCS}
 
-echo "--- Building kernel and modules with LOCALVERSION='%{kernel_localversion}' ---"
-make %{?_smp_mflags} LOCALVERSION=%{kernel_localversion} bzImage modules
+# Build kernel tools
+make -C tools -j${NPROCS}
 
-# --- %install: Install the compiled files ---
 %install
-echo "--- Installing kernel and modules to buildroot ---"
-make INSTALL_MOD_PATH=%{buildroot} LOCALVERSION=%{kernel_localversion} modules_install
+rm -rf %{buildroot}
+make INSTALL_MOD_PATH=%{buildroot} modules_install
+mkdir -p %{buildroot}/boot
+cp -v %{_kernel_arch_dir}/boot/bzImage %{buildroot}/boot/vmlinuz-%{_kernel_release_name}
+cp -v System.map %{buildroot}/boot/System.map-%{_kernel_release_name}
+cp -v .config %{buildroot}/boot/config-%{_kernel_release_name}
 
-# Note: Removed the 'rm' commands for the symlinks as we will handle them in %files.
+# Install kernel headers and devel files
+mkdir -p %{buildroot}/usr/src/kernels/%{_modname}
+cp -a include %{buildroot}/usr/src/kernels/%{_modname}/
+cp -a %{_kernel_arch_dir}/include %{buildroot}/usr/src/kernels/%{_modname}/
+cp -a .config %{buildroot}/usr/src/kernels/%{_modname}/
+cp -a Module.symvers %{buildroot}/usr/src/kernels/%{_modname}/
+cp -a scripts %{buildroot}/usr/src/kernels/%{_modname}/
+cp -a vmlinux %{buildroot}/usr/src/kernels/%{_modname}/
 
-install -d %{buildroot}/boot
-install -m 644 arch/x86/boot/bzImage %{buildroot}/boot/vmlinuz-%{full_kernel_string}
-install -m 644 System.map %{buildroot}/boot/System.map-%{full_kernel_string}
-install -m 644 .config %{buildroot}/boot/config-%{full_kernel_string}
+# Install firmware
+mkdir -p %{buildroot}/lib/firmware
+cp -a firmware/* %{buildroot}/lib/firmware/
 
-# --- %post: Post-installation script ---
+# Install documentation
+mkdir -p %{buildroot}/usr/share/doc/%{_kernel_name}-%{version}
+cp -a Documentation/* %{buildroot}/usr/share/doc/%{_kernel_name}-%{version}/
+
+# Install kernel tools and devel
+make -C tools INSTALL_MOD_PATH=%{buildroot} DESTDIR=%{buildroot} install
+
+# Generate debug symbols
+mkdir -p %{buildroot}/usr/lib/debug/lib/modules/%{_modname}
+objcopy --only-keep-debug vmlinux %{buildroot}/usr/lib/debug/lib/modules/%{_modname}/vmlinux.debug
+strip -g vmlinux
+objcopy --add-gnu-debuglink=%{buildroot}/usr/lib/debug/lib/modules/%{_modname}/vmlinux.debug vmlinux
+find %{buildroot}/lib/modules/%{_modname} -name "*.ko" -exec objcopy --only-keep-debug {} {}.debug \;
+find %{buildroot}/lib/modules/%{_modname} -name "*.ko" -exec strip -g {} \;
+
 %post
-echo "--- Running kernel-install to add the new kernel ---"
-/sbin/kernel-install add %{full_kernel_string} /boot/vmlinuz-%{full_kernel_string}
+# Use grubby to manage bootloader entries
+grubby --add-kernel=/boot/vmlinuz-%{_kernel_release_name} \
+       --title="Linux Kernel %{_kernel_release_name}" \
+       --copy-default \
+       --make-default
 
-# --- %postun: Post-uninstallation script ---
-%postun
-echo "--- Running kernel-install to remove the old kernel ---"
-/sbin/kernel-install remove %{full_kernel_string}
+%preun
+if [ $1 -eq 0 ]; then
+   grubby --remove-kernel=/boot/vmlinuz-%{_kernel_release_name}
+fi
 
-# --- %files: List of files to be included in the RPM ---
 %files
-/boot/vmlinuz-%{full_kernel_string}
-/boot/System.map-%{full_kernel_string}
-/boot/config-%{full_kernel_string}
+/boot/vmlinuz-%{_kernel_release_name}
+/boot/System.map-%{_kernel_release_name}
+/boot/config-%{_kernel_release_name}
+/lib/modules/%{_modname}/
 
-# --- FIX: Explicitly package the module directory contents ---
-# This is a more robust method than a simple directory wildcard.
-# 1. Claim the directory itself.
-%dir /lib/modules/%{full_kernel_string}
-# 2. Claim the 'kernel' subdirectory, which contains all the .ko modules.
-/lib/modules/%{full_kernel_string}/kernel/
-# 3. Claim all the module metadata files (modules.alias, modules.dep, etc.).
-/lib/modules/%{full_kernel_string}/modules.*
-# 4. Exclude the problematic symlinks. This prevents both the "unpackaged file"
-#    error and the "absolute symlink" warning.
-%exclude /lib/modules/%{full_kernel_string}/build
-%exclude /lib/modules/%{full_kernel_string}/source
+%files headers
+/usr/src/kernels/%{_modname}/include/
+/usr/src/kernels/%{_modname}/arch/x86/include/
 
+%files devel
+/usr/src/kernels/%{_modname}/.config
+/usr/src/kernels/%{_modname}/Module.symvers
+/usr/src/kernels/%{_modname}/scripts/
+/usr/src/kernels/%{_modname}/vmlinux
 
-# --- %changelog: Record of changes to the spec file ---
+%files debug
+# The debug kernel itself
+/boot/vmlinuz-%{_kernel_release_name}
+
+%files debuginfo
+# Debug symbols for the kernel and modules
+/usr/lib/debug/lib/modules/%{_modname}/
+
+%files firmware
+/lib/firmware/
+
+%files doc
+/usr/share/doc/%{_kernel_name}-%{version}/
+
+%files tools
+# List the specific kernel tools to be installed
+/usr/bin/perf
+/usr/bin/cpupower
+/usr/bin/turbostat
+
+%files tools-devel
+# List the specific development files for the tools
+/usr/include/perf/
+
 %changelog
-* Sun Aug 10 2025 Gemini <gemini@google.com> - 6.16.0-0.rc1.aspm_fix_1.g19272b37aa4f
-- Fixed "Installed (but unpackaged) file(s) found" error.
-- Rewrote %files section to be more explicit about module files.
-- Used %exclude to ignore the problematic build/source symlinks.
-* Sat Aug 10 2025 Gemini <gemini@google.com> - 6.16.0-0.rc1.aspm_fix_1.g19272b37aa4f
-- Disabled debug package generation to fix "Empty %files" error.
-- Removed absolute 'build' and 'source' symlinks in %install to fix warnings.
-* Sat Aug 09 2025 Gemini <gemini@google.com> - 6.16.0-0.rc1.aspm_fix_1.g19272b37aa4f
-- Corrected kernel versioning logic to prevent "Directory not found" error.
-- Introduced a %full_kernel_string macro to ensure consistency.
-- Added 'scripts/config --disable LOCALVERSION_AUTO' to make version predictable.
-* Fri Aug 09 2024 Gemini <gemini@google.com> - 6.16.0-aspm_fix_1.19272b37aa4f
-- Fixed "No such file or directory" error in %prep.
-- Replaced host config copy with 'make defconfig'.
-* Fri Aug 09 2024 Gemini <gemini@google.com> - 6.10.0-rc2.aspm_fix_1.19272b37
-- Initial build with ASPM patch for ath10k/ath11k testing.
-
-
-
-
-
-
+* Sat Aug 09 2025 Bhargavjit Bhuyan <example@example.com> - 6.16.0-1
+- Initial build of mainline kernel 6.16.0 for Fedora COPR.

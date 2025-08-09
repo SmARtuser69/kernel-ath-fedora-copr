@@ -18,12 +18,12 @@
 %define kernel_version 6.16.0
 %define custom_release rc2.aspm_fix_1
 Name:          kernel-ath
-Version:       %{kernel_version}
-Release:       %{custom_release}.%{short_commit}%{?dist}
-Summary:       Custom Linux kernel with Qualcomm Atheros ASPM patch
-License:       GPL-2.0-only
-URL:           https://github.com/torvalds/linux
-Source0:       https://github.com/torvalds/linux/archive/%{short_commit}/linux-%{short_commit}.tar.gz
+Version:       %{kernel_version}
+Release:       %{custom_release}.%{short_commit}%{?dist}
+Summary:       Custom Linux kernel with Qualcomm Atheros ASPM patch
+License:       GPL-2.0-only
+URL:           https://github.com/torvalds/linux
+Source0:       https://github.com/torvalds/linux/archive/%{short_commit}/linux-%{short_commit}.tar.gz
 
 # --- Build Dependencies ---
 # These are the packages needed to build the kernel.

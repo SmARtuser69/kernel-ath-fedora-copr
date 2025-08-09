@@ -3,45 +3,24 @@
 #
 # Author: Gemini
 # Date: 2025-08-09
-#
-# To build this locally:
-# 1. Save this file as kernel-custom-ath10k.spec
-# 2. Install build tools: sudo dnf install rpm-build rpmdevtools
-# 3. Run: rpmbuild -ba kernel-custom-ath10k.spec
-#
-# For COPR, you just need to upload this spec file.
 
-# --- FIX: Disable the generation of debug packages ---
-# This prevents the "Empty %files file" error which is fatal in COPR.
+# Disable the generation of debug packages.
 %define debug_package %{nil}
 
-# --- Preamble: Metadata and Corrected Versioning ---
+# --- Preamble: Metadata and Versioning ---
 
 %define full_commit 19272b37aa4f83ca52bdf9c16d5d81bdd1354494
 %define short_commit 19272b37aa4f
 
 # --- KERNEL VERSIONING ---
-# Define all version components separately for clarity and correctness.
-
-# The base version number. RPM 'Version' tag cannot contain hyphens.
 %define kernel_base_ver 6.16.0
-# The extra version from the kernel's Makefile for this specific commit.
 %define kernel_extra_ver rc1
-# Our custom identifier for the patch/build.
 %define custom_id aspm_fix_1
-# This is the string that will be passed to the kernel build as LOCALVERSION.
-# The leading '-' is required by the kernel's build system.
 %define kernel_localversion -%{custom_id}.g%{short_commit}
-
-# This macro defines the *final, predictable kernel release string* that will be generated.
-# It combines the base version, extra version, and our local version.
-# This is the single source of truth for all paths and scripts.
-# Example: 6.16.0-rc1-aspm_fix_1.g19272b37aa4f
 %define full_kernel_string %{kernel_base_ver}-%{kernel_extra_ver}%{kernel_localversion}
 
 Name:           kernel-ath
 Version:        %{kernel_base_ver}
-# The Release tag is structured to be sortable and informative, reflecting the build details.
 Release:        0.%{kernel_extra_ver}.%{custom_id}.g%{short_commit}%{?dist}
 Summary:        Custom Linux kernel with Qualcomm Atheros ASPM patch
 License:        GPL-2.0-only
@@ -95,25 +74,19 @@ echo "--- Fetching patch with b4 ---"
 b4 am 20250716-ath-aspm-fix-v1-0-dd3e62c1b692@oss.qualcomm.com
 
 echo "--- Applying ASPM patch ---"
-# Apply the patch from the downloaded mailbox file. Using a wildcard is fine as b4 creates a unique name.
 git am -3 *.mbx
 
 
 # --- %build: Compile the kernel ---
 %build
 echo "--- Configuring the kernel ---"
-
 make defconfig
 
-# Disable automatic version suffixing to control the final version string.
 echo "Disabling CONFIG_LOCALVERSION_AUTO to control the final version string."
 scripts/config --disable LOCALVERSION_AUTO
-
-# Run 'make olddefconfig' again to ensure the configuration is consistent.
 make olddefconfig
 
 echo "--- Building kernel and modules with LOCALVERSION='%{kernel_localversion}' ---"
-# We pass our custom localversion to the make command.
 make %{?_smp_mflags} LOCALVERSION=%{kernel_localversion} bzImage modules
 
 # --- %install: Install the compiled files ---
@@ -121,4 +94,64 @@ make %{?_smp_mflags} LOCALVERSION=%{kernel_localversion} bzImage modules
 echo "--- Installing kernel and modules to buildroot ---"
 make INSTALL_MOD_PATH=%{buildroot} LOCALVERSION=%{kernel_localversion} modules_install
 
-# --- FIX:
+# Note: Removed the 'rm' commands for the symlinks as we will handle them in %files.
+
+install -d %{buildroot}/boot
+install -m 644 arch/x86/boot/bzImage %{buildroot}/boot/vmlinuz-%{full_kernel_string}
+install -m 644 System.map %{buildroot}/boot/System.map-%{full_kernel_string}
+install -m 644 .config %{buildroot}/boot/config-%{full_kernel_string}
+
+# --- %post: Post-installation script ---
+%post
+echo "--- Running kernel-install to add the new kernel ---"
+/sbin/kernel-install add %{full_kernel_string} /boot/vmlinuz-%{full_kernel_string}
+
+# --- %postun: Post-uninstallation script ---
+%postun
+echo "--- Running kernel-install to remove the old kernel ---"
+/sbin/kernel-install remove %{full_kernel_string}
+
+# --- %files: List of files to be included in the RPM ---
+%files
+/boot/vmlinuz-%{full_kernel_string}
+/boot/System.map-%{full_kernel_string}
+/boot/config-%{full_kernel_string}
+
+# --- FIX: Explicitly package the module directory contents ---
+# This is a more robust method than a simple directory wildcard.
+# 1. Claim the directory itself.
+%dir /lib/modules/%{full_kernel_string}
+# 2. Claim the 'kernel' subdirectory, which contains all the .ko modules.
+/lib/modules/%{full_kernel_string}/kernel/
+# 3. Claim all the module metadata files (modules.alias, modules.dep, etc.).
+/lib/modules/%{full_kernel_string}/modules.*
+# 4. Exclude the problematic symlinks. This prevents both the "unpackaged file"
+#    error and the "absolute symlink" warning.
+%exclude /lib/modules/%{full_kernel_string}/build
+%exclude /lib/modules/%{full_kernel_string}/source
+
+
+# --- %changelog: Record of changes to the spec file ---
+%changelog
+* Sun Aug 10 2025 Gemini <gemini@google.com> - 6.16.0-0.rc1.aspm_fix_1.g19272b37aa4f
+- Fixed "Installed (but unpackaged) file(s) found" error.
+- Rewrote %files section to be more explicit about module files.
+- Used %exclude to ignore the problematic build/source symlinks.
+* Sat Aug 10 2025 Gemini <gemini@google.com> - 6.16.0-0.rc1.aspm_fix_1.g19272b37aa4f
+- Disabled debug package generation to fix "Empty %files" error.
+- Removed absolute 'build' and 'source' symlinks in %install to fix warnings.
+* Sat Aug 09 2025 Gemini <gemini@google.com> - 6.16.0-0.rc1.aspm_fix_1.g19272b37aa4f
+- Corrected kernel versioning logic to prevent "Directory not found" error.
+- Introduced a %full_kernel_string macro to ensure consistency.
+- Added 'scripts/config --disable LOCALVERSION_AUTO' to make version predictable.
+* Fri Aug 09 2024 Gemini <gemini@google.com> - 6.16.0-aspm_fix_1.19272b37aa4f
+- Fixed "No such file or directory" error in %prep.
+- Replaced host config copy with 'make defconfig'.
+* Fri Aug 09 2024 Gemini <gemini@google.com> - 6.10.0-rc2.aspm_fix_1.19272b37
+- Initial build with ASPM patch for ath10k/ath11k testing.
+
+
+
+
+
+

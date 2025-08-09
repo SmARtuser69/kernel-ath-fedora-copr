@@ -36,13 +36,11 @@ BuildRequires:  flex
 BuildRequires:  bison
 BuildRequires:  openssl-devel
 BuildRequires:  elfutils-libelf-devel
-#BuildRequires:  zstd-devel
 BuildRequires:  dwarves
 BuildRequires:  perl-interpreter
 BuildRequires:  python3
 BuildRequires:  bc
 BuildRequires:  rsync
-#BuildRequires:  kernel-install
 BuildRequires:  rust
 BuildRequires:  openssl-devel-engine
 BuildRequires:  kmod
@@ -53,7 +51,6 @@ BuildRequires:  gawk
 BuildRequires:  libselinux-devel
 BuildRequires:  libzstd-devel
 BuildRequires:  zstd
-BuildRequires:  xz
 
 # Dependencies for b4 tool and graphical config tools
 BuildRequires:  python3-pip

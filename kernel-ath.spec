@@ -120,29 +120,26 @@ build applications that use the kernel tools.
 %setup -q -n ath-main
 
 %build
-# Use the default configuration
-make defconfig
-
-# Compile the kernel
+# Use the default configuration and build the entire kernel and its modules
 NPROCS=$(/usr/bin/getconf _NPROCESSORS_ONLN)
-make -j${NPROCS} bzImage
-
-# Build kernel tools
-make -C tools -j${NPROCS}
+make defconfig
+make -j${NPROCS}
 
 %install
 rm -rf %{buildroot}
 make INSTALL_MOD_PATH=%{buildroot} modules_install
+
+# Explicitly create boot directory
 mkdir -p %{buildroot}/boot
+
+# Copy built kernel files
 cp -v arch/x86/boot/bzImage %{buildroot}/boot/vmlinuz-%{_kernel_release_name}
 cp -v System.map %{buildroot}/boot/System.map-%{_kernel_release_name}
 cp -v .config %{buildroot}/boot/config-%{_kernel_release_name}
 
 # Install kernel headers and devel files
 mkdir -p %{buildroot}/usr/src/kernels/%{_modname}
-cp -a include %{buildroot}/usr/src/kernels/%{_modname}/
-cp -a arch/x86/include %{buildroot}/usr/src/kernels/%{_modname}/
-cp -a .config %{buildroot}/usr/src/kernels/%{_modname}/
+make headers_install INSTALL_HDR_PATH=%{buildroot}/usr/src/kernels/%{_modname}
 cp -a Module.symvers %{buildroot}/usr/src/kernels/%{_modname}/
 cp -a scripts %{buildroot}/usr/src/kernels/%{_modname}/
 cp -a vmlinux %{buildroot}/usr/src/kernels/%{_modname}/
@@ -186,7 +183,6 @@ fi
 
 %files headers
 /usr/src/kernels/%{_modname}/include/
-/usr/src/kernels/%{_modname}/arch/x86/include/
 
 %files devel
 /usr/src/kernels/%{_modname}/.config

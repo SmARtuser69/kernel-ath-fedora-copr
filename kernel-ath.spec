@@ -16,7 +16,7 @@
 # The git commit hash is used to create a unique version string.
 %define short_commit 19272b37aa4f83ca52bdf9c16d5d81bdd1354494
 %define kernel_version 6.16.0
-%define custom_release rc2.aspm_fix_1
+%define custom_release aspm_fix_1
 Name:          kernel-ath
 Version:       %{kernel_version}
 Release:       %{custom_release}.%{short_commit}%{?dist}
@@ -42,7 +42,7 @@ BuildRequires:  perl-interpreter
 BuildRequires:  python3
 BuildRequires:  bc
 BuildRequires:  rsync
-BuildRequires:  kernel-install
+#BuildRequires:  kernel-install
 BuildRequires:  rust
 BuildRequires:  openssl-devel-engine
 BuildRequires:  kmod
@@ -145,7 +145,7 @@ echo "--- Running kernel-install to remove the old kernel ---"
 
 # --- %changelog: Record of changes to the spec file ---
 %changelog
-* Sat Aug 09 2025 Gemini <gemini@google.com> - 6.16.0-rc2.aspm_fix_1.3781648
+* Sat Aug 09 2025 Gemini <gemini@google.com> - 6.16.0-aspm_fix_1.19272b37aa4f83ca52bdf9c16d5d81bdd1354494
 - Updated kernel to version 6.16.0 and corrected the short commit hash.
 * Tue Aug 09 2025 Gemini <gemini@google.com> - 6.10.0-rc2.aspm_fix_1.19272b37
 - Switched to using 'b4 am' to fetch patch as requested by user.

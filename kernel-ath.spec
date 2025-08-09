@@ -5,11 +5,11 @@
 # Author: Bhargavjit Bhuyan
 #
 
-%define mainline_version 6
-%define mainline_subversion 16
-%define kernel_version %{mainline_version}.%{mainline_subversion}
-%define patchlevel 0
-%define release_version 1
+%global mainline_version 6
+%global mainline_subversion 16
+%global patchlevel 0
+%global kernel_version %{mainline_version}.%{mainline_subversion}.%{patchlevel}
+%global release_version 1
 
 # Use macros for better portability and consistency
 %global _kernel_name kernel-mainline-ath
@@ -18,7 +18,7 @@
 
 Name:           %{_kernel_name}
 Version:        %{kernel_version}
-Release:        %{release_version}.%{patchlevel}%{?dist}
+Release:        %{release_version}%{?dist}
 Summary:        The Linux kernel (mainline)
 License:        GPLv2
 URL:            https://www.kernel.org/
@@ -37,7 +37,6 @@ BuildRequires:  bison
 BuildRequires:  flex
 BuildRequires:  rsync
 BuildRequires:  python3-devel
-BuildRequires:  openssl-devel
 BuildRequires:  grubby
 BuildRequires:  kmod
 BuildRequires:  xz
@@ -47,6 +46,7 @@ BuildRequires:  glibc-devel
 BuildRequires:  python3-pyelftools
 BuildRequires:  elfutils-devel
 BuildRequires:  newt-devel
+BuildRequires:  pahole
 
 ExclusiveArch:  x86_64
 
@@ -71,18 +71,9 @@ Requires:       kernel-headers = %{version}-%{release}
 This package provides the development files needed to build external kernel
 modules.
 
-# Kernel debug subpackage
-%package debug
-Summary:        The Linux kernel with debug symbols
-Requires:       %{_kernel_name} = %{version}-%{release}
-%description debug
-This package contains the debug version of the Linux kernel, with extra symbols
-and debug information to aid in kernel debugging.
-
 # Kernel debuginfo subpackage
 %package debuginfo
 Summary:        Debug symbols for the Linux kernel
-BuildArch:      noarch
 Requires:       %{_kernel_name} = %{version}-%{release}
 %description debuginfo
 This package provides debug symbols for the Linux kernel and its modules.
@@ -142,6 +133,7 @@ mkdir -p %{buildroot}/usr/src/kernels/%{_modname}
 make headers_install INSTALL_HDR_PATH=%{buildroot}/usr/src/kernels/%{_modname}
 cp -a Module.symvers %{buildroot}/usr/src/kernels/%{_modname}/
 cp -a scripts %{buildroot}/usr/src/kernels/%{_modname}/
+cp -a .config %{buildroot}/usr/src/kernels/%{_modname}/
 cp -a vmlinux %{buildroot}/usr/src/kernels/%{_modname}/
 
 # Install firmware
@@ -158,10 +150,10 @@ make -C tools INSTALL_MOD_PATH=%{buildroot} DESTDIR=%{buildroot} install
 # Generate debug symbols
 mkdir -p %{buildroot}/usr/lib/debug/lib/modules/%{_modname}
 objcopy --only-keep-debug vmlinux %{buildroot}/usr/lib/debug/lib/modules/%{_modname}/vmlinux.debug
-strip -g vmlinux
+strip --strip-debug --strip-unneeded vmlinux
 objcopy --add-gnu-debuglink=%{buildroot}/usr/lib/debug/lib/modules/%{_modname}/vmlinux.debug vmlinux
 find %{buildroot}/lib/modules/%{_modname} -name "*.ko" -exec objcopy --only-keep-debug {} {}.debug \;
-find %{buildroot}/lib/modules/%{_modname} -name "*.ko" -exec strip -g {} \;
+find %{buildroot}/lib/modules/%{_modname} -name "*.ko" -exec strip --strip-debug --strip-unneeded {} \;
 
 %post
 # Use grubby to manage bootloader entries
@@ -176,41 +168,44 @@ if [ $1 -eq 0 ]; then
 fi
 
 %files
+%defattr(-,root,root,-)
 /boot/vmlinuz-%{_kernel_release_name}
 /boot/System.map-%{_kernel_release_name}
 /boot/config-%{_kernel_release_name}
 /lib/modules/%{_modname}/
 
 %files headers
+%defattr(-,root,root,-)
 /usr/src/kernels/%{_modname}/include/
 
 %files devel
+%defattr(-,root,root,-)
 /usr/src/kernels/%{_modname}/.config
 /usr/src/kernels/%{_modname}/Module.symvers
 /usr/src/kernels/%{_modname}/scripts/
 /usr/src/kernels/%{_modname}/vmlinux
 
-%files debug
-# The debug kernel itself
-/boot/vmlinuz-%{_kernel_release_name}
-
 %files debuginfo
-# Debug symbols for the kernel and modules
+%defattr(-,root,root,-)
 /usr/lib/debug/lib/modules/%{_modname}/
 
 %files firmware
+%defattr(-,root,root,-)
 /lib/firmware/
 
 %files doc
+%defattr(-,root,root,-)
 /usr/share/doc/%{_kernel_name}-%{version}/
 
 %files tools
+%defattr(-,root,root,-)
 # List the specific kernel tools to be installed
 /usr/bin/perf
 /usr/bin/cpupower
 /usr/bin/turbostat
 
 %files tools-devel
+%defattr(-,root,root,-)
 # List the specific development files for the tools
 /usr/include/perf/
 

@@ -14,9 +14,9 @@
 # --- Preamble: Metadata for the RPM package ---
 
 # The git commit hash is used to create a unique version string.
-%define short_commit 19272b37aa4f83ca52bdf9c16d5d81bdd1354494
+%define short_commit 19272b37aa4f
 # This LOCALVERSION will be used by the kernel build process.
-%define kernel_localversion -%{custom_release}.%{short_commit}
+%define kernel_localversion -aspm_fix_1.g%{short_commit}
 %define kernel_version 6.16.0
 %define custom_release aspm_fix_1
 Name:          kernel-ath

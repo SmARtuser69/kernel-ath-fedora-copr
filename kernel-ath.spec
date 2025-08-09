@@ -49,6 +49,7 @@ BuildRequires: libselinux-devel
 BuildRequires: libzstd-devel
 BuildRequires: zstd
 BuildRequires: python3-b4
+BuildRequires: gpg
 
 %description
 This package provides a custom-built Linux kernel based on version %{version}-%{release}.

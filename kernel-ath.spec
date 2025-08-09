@@ -27,7 +27,6 @@ Source0:       https://github.com/torvalds/linux/archive/%{short_commit}/linux-%
 
 # --- Build Dependencies ---
 # These are the packages needed to build the kernel.
-# The previous version contained invisible characters and a few typos.
 BuildRequires: gcc
 BuildRequires: gcc-c++
 BuildRequires: make
@@ -63,14 +62,17 @@ This build is intended for testing purposes only.
 # This section handles unpacking the source, checking out the right commit,
 # and applying the necessary patch using the user's exact steps.
 %prep
-# The RPM build system automatically extracts the Source0 tarball.
+# The standard RPM macro to unpack the source tarball.
+# This automatically changes the current directory to the source tree.
+%setup -q
+
 # We initialize a git repo here to apply the patch with 'git am'.
 echo "--- Initializing git repo for patch application ---"
 git init
-git add .
 # Set a user name and email for the git commit within the build environment
 git config user.email "mockbuild@localhost"
 git config user.name "Mock Build"
+git add .
 git commit -m "Initial commit of Linux source from tarball"
 
 # Install the 'b4' tool to fetch the patch from the mailing list.

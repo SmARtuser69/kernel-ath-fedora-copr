@@ -17,8 +17,7 @@
 %define short_commit 19272b37aa4f83ca52bdf9c16d5d81bdd1354494
 %define kernel_version 6.16.0
 %define custom_release rc2.aspm_fix_1
-
-Name:          kernel-ath
+Name:          kernel-ath
 Version:       %{kernel_version}
 Release:       %{custom_release}.%{short_commit}%{?dist}
 Summary:       Custom Linux kernel with Qualcomm Atheros ASPM patch

@@ -5,11 +5,11 @@
 # Author: Bhargavjit Bhuyan
 #
 
-%define         mainline_version 6
-%define         mainline_subversion 16
-%define         kernel_version %{mainline_version}.%{mainline_subversion}
-%define         patchlevel 0
-%define         release_version 1
+%define mainline_version 6
+%define mainline_subversion 16
+%define kernel_version %{mainline_version}.%{mainline_subversion}
+%define patchlevel 0
+%define release_version 1
 
 # Use macros for better portability and consistency
 %global _kernel_name kernel-mainline-ath

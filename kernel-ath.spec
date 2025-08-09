@@ -18,7 +18,7 @@
 %define kernel_version 6.16.0
 %define custom_release rc2.aspm_fix_1
 
-Name:           kernel-ath
+Name:           %{kernel_name_base}
 Version:        %{kernel_version}
 Release:        %{custom_release}.%{short_commit}%{?dist}
 Summary:        Custom Linux kernel with Qualcomm Atheros ASPM patch
@@ -50,6 +50,12 @@ BuildRequires:  kmod
 BuildRequires:  gcc-c++
 BuildRequires:  binutils
 BuildRequires:  bindgen
+BuildRequires:  gawk
+BuildRequires:  libselinux-devel
+BuildRequires:  libzstd-devel
+BuildRequires:  zstd
+BuildRequires:  xz
+
 # Dependencies for b4 tool and graphical config tools
 BuildRequires:  python3-pip
 

@@ -13,7 +13,8 @@
 
 # --- Preamble: Metadata for the RPM package ---
 
-# The git commit hash is used to create a unique version string.
+# The full and short git commit hashes are used to create a unique version string.
+%define full_commit 19272b37aa4f83ca52bdf9c16d5d81bdd1354494
 %define short_commit 19272b37aa4f
 # This LOCALVERSION will be used by the kernel build process.
 %define kernel_localversion -aspm_fix_1.g%{short_commit}
@@ -25,7 +26,7 @@ Release:       %{custom_release}.%{short_commit}%{?dist}
 Summary:       Custom Linux kernel with Qualcomm Atheros ASPM patch
 License:       GPL-2.0-only
 URL:           https://github.com/torvalds/linux/
-Source0:       https://github.com/torvalds/linux/archive/%{short_commit}.tar.gz
+Source0:       https://github.com/torvalds/linux/archive/%{full_commit}.tar.gz
 
 # --- Build Dependencies ---
 # These are the packages needed to build the kernel.
@@ -55,7 +56,7 @@ BuildRequires: python3-b4
 
 %description
 This package provides a custom-built Linux kernel based on version %{version}-%{release}.
-It is built from the mainline git repository at commit %{short_commit} and includes
+It is built from the mainline git repository at commit %{full_commit} and includes
 a patch to fix Active State Power Management (ASPM) issues with some
 Qualcomm Atheros (ath10k/ath11k) wireless devices.
 
@@ -66,8 +67,8 @@ This build is intended for testing purposes only.
 # and applying the necessary patch using the user's exact steps.
 %prep
 # The standard RPM macro to unpack the source tarball.
-# This automatically changes the current directory to the source tree.
-%setup -q -n linux-%{short_commit}
+# The `-n` flag tells rpmbuild the name of the directory to use.
+%setup -q -n linux-%{full_commit}
 
 # The following steps initialize a git repository and apply a patch.
 echo "--- Initializing git repo for patch application ---"
@@ -144,7 +145,10 @@ echo "--- Running kernel-install to remove the old kernel ---"
 
 # --- %changelog: Record of changes to the spec file ---
 %changelog
-* Fri Aug 09 2024 Gemini <gemini@google.com> - 6.16.0-aspm_fix_1.19272b37aa4f83ca52bdf9c16d5d81bdd1354494
+* Fri Aug 09 2024 Gemini <gemini@google.com> - 6.16.0-aspm_fix_1.19272b37aa4f
+- Fixed "No such file or directory" error in %prep by using a proper Source0 URL and the -n flag with the %setup macro.
+- Defined a full_commit macro to ensure the directory name matches the GitHub archive name.
+* Fri Aug 09 2024 Gemini <gemini@google.com> - 6.16.0-aspm_fix_1.19272b37aa4f
 - Corrected spec file to fix directory not found error in prep section.
 - Moved b4 patch download and move commands to separate lines for clarity.
 - Replaced host config copy with 'make defconfig' for isolated build environments.

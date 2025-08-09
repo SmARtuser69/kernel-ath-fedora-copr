@@ -109,3 +109,46 @@ make %{?_smp_mflags} bzImage modules
 # directory (%{buildroot}) from which the RPM package will be created.
 %install
 echo "--- Installing kernel and modules to buildroot ---"
+# Install the modules
+make INSTALL_MOD_PATH=%{buildroot} modules_install
+
+# Install the kernel image, System.map, and .config file
+install -d %{buildroot}/boot
+install -m 644 arch/x86/boot/bzImage %{buildroot}/boot/vmlinuz-%{version}-%{release}
+install -m 644 System.map %{buildroot}/boot/System.map-%{version}-%{release}
+install -m 644 .config %{buildroot}/boot/config-%{version}-%{release}
+
+# --- %post: Post-installation script ---
+# This script runs on the user's machine after the RPM is installed.
+%post
+echo "--- Running kernel-install to add the new kernel ---"
+# Use the standard kernel-install script to add the new kernel to the bootloader.
+/sbin/kernel-install add %{version}-%{release} /boot/vmlinuz-%{version}-%{release}
+
+# --- %postun: Post-uninstallation script ---
+# This script runs on the user's machine if the RPM is uninstalled.
+%postun
+echo "--- Running kernel-install to remove the old kernel ---"
+# Use kernel-install to remove the kernel from the bootloader.
+/sbin/kernel-install remove %{version}-%{release}
+
+# --- %files: List of files to be included in the RPM ---
+# This tells rpmbuild which files from the %{buildroot} belong to this package.
+%files
+/boot/vmlinuz-%{version}-%{release}
+/boot/System.map-%{version}-%{release}
+/boot/config-%{version}-%{release}
+/lib/modules/%{version}-%{release}/
+
+# --- %changelog: Record of changes to the spec file ---
+%changelog
+* Fri Aug 09 2024 Gemini <gemini@google.com> - 6.16.0-aspm_fix_1.19272b37aa4f83ca52bdf9c16d5d81bdd1354494
+- Corrected spec file to fix directory not found error in prep section.
+- Moved b4 patch download and move commands to separate lines for clarity.
+- Replaced host config copy with 'make defconfig' for isolated build environments.
+* Fri Aug 09 2024 Gemini <gemini@google.com> - 6.10.0-rc2.aspm_fix_1.19272b37
+- Switched to using 'b4 am' to fetch patch as requested by user.
+- Added user-requested build dependencies.
+- Removed explicit module enabling to stick closer to original steps.
+* Fri Aug 09 2024 Gemini <gemini@google.com> - 6.10.0-rc2.aspm_fix_1.19272b37
+- Initial build with ASPM patch for ath10k/ath11k testing.

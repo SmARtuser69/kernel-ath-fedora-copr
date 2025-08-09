@@ -68,6 +68,9 @@ This build is intended for testing purposes only.
 echo "--- Initializing git repo for patch application ---"
 git init
 git add .
+# Set a user name and email for the git commit within the build environment
+git config user.email "mockbuild@localhost"
+git config user.name "Mock Build"
 git commit -m "Initial commit of Linux source from tarball"
 
 # Install the 'b4' tool to fetch the patch from the mailing list.
@@ -139,7 +142,7 @@ echo "--- Running kernel-install to remove the old kernel ---"
 # --- %changelog: Record of changes to the spec file ---
 %changelog
 * Fri Aug 09 2024 Gemini <gemini@google.com> - 6.16.0-aspm_fix_1.19272b37aa4f83ca52bdf9c16d5d81bdd1354494
-- Corrected spec file to fix build error.
+- Corrected spec file to fix git commit error.
 * Fri Aug 09 2024 Gemini <gemini@google.com> - 6.10.0-rc2.aspm_fix_1.19272b37
 - Switched to using 'b4 am' to fetch patch as requested by user.
 - Added user-requested build dependencies.

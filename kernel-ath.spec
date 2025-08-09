@@ -14,7 +14,6 @@
 # Use macros for better portability and consistency
 %global _kernel_name kernel-mainline-ath
 %global _kernel_release_name %{version}-%{release}
-%global _kernel_arch_dir arch/%{_arch_dir}
 %global _modname %{_kernel_release_name}
 
 Name:           %{_kernel_name}
@@ -126,7 +125,7 @@ make defconfig
 
 # Compile the kernel
 NPROCS=$(/usr/bin/getconf _NPROCESSORS_ONLN)
-make -j${NPROCS}
+make -j${NPROCS} bzImage
 
 # Build kernel tools
 make -C tools -j${NPROCS}
@@ -135,14 +134,14 @@ make -C tools -j${NPROCS}
 rm -rf %{buildroot}
 make INSTALL_MOD_PATH=%{buildroot} modules_install
 mkdir -p %{buildroot}/boot
-cp -v %{_kernel_arch_dir}/boot/bzImage %{buildroot}/boot/vmlinuz-%{_kernel_release_name}
+cp -v arch/x86/boot/bzImage %{buildroot}/boot/vmlinuz-%{_kernel_release_name}
 cp -v System.map %{buildroot}/boot/System.map-%{_kernel_release_name}
 cp -v .config %{buildroot}/boot/config-%{_kernel_release_name}
 
 # Install kernel headers and devel files
 mkdir -p %{buildroot}/usr/src/kernels/%{_modname}
 cp -a include %{buildroot}/usr/src/kernels/%{_modname}/
-cp -a %{_kernel_arch_dir}/include %{buildroot}/usr/src/kernels/%{_modname}/
+cp -a arch/x86/include %{buildroot}/usr/src/kernels/%{_modname}/
 cp -a .config %{buildroot}/usr/src/kernels/%{_modname}/
 cp -a Module.symvers %{buildroot}/usr/src/kernels/%{_modname}/
 cp -a scripts %{buildroot}/usr/src/kernels/%{_modname}/

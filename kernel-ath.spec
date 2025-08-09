@@ -63,10 +63,12 @@ This build is intended for testing purposes only.
 # This section handles unpacking the source, checking out the right commit,
 # and applying the necessary patch using the user's exact steps.
 %prep
-# We use git to checkout the exact commit.
-echo "--- Cloning kernel source ---"
-git clone --no-checkout https://github.com/torvalds/linux.git .
-git checkout 19272b37aa4f83ca52bdf9c16d5d81bdd1354494 -b aspm-patch
+# The RPM build system automatically extracts the Source0 tarball.
+# We initialize a git repo here to apply the patch with 'git am'.
+echo "--- Initializing git repo for patch application ---"
+git init
+git add .
+git commit -m "Initial commit of Linux source from tarball"
 
 # Install the 'b4' tool to fetch the patch from the mailing list.
 echo "--- Installing b4 tool ---"
@@ -136,11 +138,11 @@ echo "--- Running kernel-install to remove the old kernel ---"
 
 # --- %changelog: Record of changes to the spec file ---
 %changelog
-* Sat Aug 09 2024 Gemini <gemini@google.com> - 6.16.0-aspm_fix_1.19272b37aa4f83ca52bdf9c16d5d81bdd1354494
-- Corrected spec file from user provided logs.
-* Tue Aug 09 2024 Gemini <gemini@google.com> - 6.10.0-rc2.aspm_fix_1.19272b37
+* Fri Aug 09 2024 Gemini <gemini@google.com> - 6.16.0-aspm_fix_1.19272b37aa4f83ca52bdf9c16d5d81bdd1354494
+- Corrected spec file to fix build error.
+* Fri Aug 09 2024 Gemini <gemini@google.com> - 6.10.0-rc2.aspm_fix_1.19272b37
 - Switched to using 'b4 am' to fetch patch as requested by user.
 - Added user-requested build dependencies.
 - Removed explicit module enabling to stick closer to original steps.
-* Tue Aug 09 2024 Gemini <gemini@google.com> - 6.10.0-rc2.aspm_fix_1.19272b37
+* Fri Aug 09 2024 Gemini <gemini@google.com> - 6.10.0-rc2.aspm_fix_1.19272b37
 - Initial build with ASPM patch for ath10k/ath11k testing.

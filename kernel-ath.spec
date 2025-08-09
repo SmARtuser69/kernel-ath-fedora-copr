@@ -14,7 +14,6 @@
 # Use macros for better portability and consistency
 %global _kernel_name kernel-mainline-ath
 %global _kernel_release_name %{version}-%{release}
-%global _modname %{_kernel_release_name}
 
 Name:           %{_kernel_name}
 Version:        %{kernel_version}
@@ -102,7 +101,7 @@ such as perf, cpupower, and turbostat.
 # Tools devel subpackage
 %package tools-devel
 Summary:        Development files for the Linux kernel tools
-Requires:       %{_kernel_name}-tools = %{version}-%{release}
+Requires:       %{_kernel_name}-tools = %{version}-%{release}, kernel-devel = %{version}-%{release}
 %description tools-devel
 This package provides the development files (headers, libraries) needed to
 build applications that use the kernel tools.
@@ -129,12 +128,11 @@ cp -v System.map %{buildroot}/boot/System.map-%{_kernel_release_name}
 cp -v .config %{buildroot}/boot/config-%{_kernel_release_name}
 
 # Install kernel headers and devel files
-mkdir -p %{buildroot}/usr/src/kernels/%{_modname}
-make headers_install INSTALL_HDR_PATH=%{buildroot}/usr/src/kernels/%{_modname}
-cp -a Module.symvers %{buildroot}/usr/src/kernels/%{_modname}/
-cp -a scripts %{buildroot}/usr/src/kernels/%{_modname}/
-cp -a .config %{buildroot}/usr/src/kernels/%{_modname}/
-cp -a vmlinux %{buildroot}/usr/src/kernels/%{_modname}/
+mkdir -p %{buildroot}/usr/src/kernels/%{_kernel_release_name}
+make headers_install INSTALL_HDR_PATH=%{buildroot}/usr/src/kernels/%{_kernel_release_name}
+cp -a Module.symvers %{buildroot}/usr/src/kernels/%{_kernel_release_name}/
+cp -a scripts %{buildroot}/usr/src/kernels/%{_kernel_release_name}/
+cp -a .config %{buildroot}/usr/src/kernels/%{_kernel_release_name}/
 
 # Install firmware
 mkdir -p %{buildroot}/lib/firmware
@@ -145,18 +143,21 @@ mkdir -p %{buildroot}/usr/share/doc/%{_kernel_name}-%{version}
 cp -a Documentation/* %{buildroot}/usr/share/doc/%{_kernel_name}-%{version}/
 
 # Install kernel tools and devel
-make -C tools INSTALL_MOD_PATH=%{buildroot} DESTDIR=%{buildroot} install
+make -C tools DESTDIR=%{buildroot} install
 
 # Generate debug symbols
-mkdir -p %{buildroot}/usr/lib/debug/lib/modules/%{_modname}
-objcopy --only-keep-debug vmlinux %{buildroot}/usr/lib/debug/lib/modules/%{_modname}/vmlinux.debug
-strip --strip-debug --strip-unneeded vmlinux
-objcopy --add-gnu-debuglink=%{buildroot}/usr/lib/debug/lib/modules/%{_modname}/vmlinux.debug vmlinux
-find %{buildroot}/lib/modules/%{_modname} -name "*.ko" -exec objcopy --only-keep-debug {} {}.debug \;
-find %{buildroot}/lib/modules/%{_modname} -name "*.ko" -exec strip --strip-debug --strip-unneeded {} \;
+mkdir -p %{buildroot}/usr/lib/debug/lib/modules/%{_kernel_release_name}
+cp vmlinux %{buildroot}/usr/lib/debug/vmlinux-%{_kernel_release_name}.debug
+strip --strip-debug vmlinux
+objcopy --add-gnu-debuglink=%{buildroot}/usr/lib/debug/vmlinux-%{_kernel_release_name}.debug vmlinux
+ln -s ../../lib/modules/%{_kernel_release_name}/vmlinux %{buildroot}/usr/src/kernels/%{_kernel_release_name}/vmlinux
+
+find %{buildroot}/lib/modules/%{_kernel_release_name} -name "*.ko" -exec objcopy --only-keep-debug {} {}.debug \;
+find %{buildroot}/lib/modules/%{_kernel_release_name} -name "*.ko" -exec strip --strip-debug --strip-unneeded {} \;
+mkdir -p %{buildroot}/usr/lib/debug/lib/modules/%{_kernel_release_name}/
+find %{buildroot}/lib/modules/%{_kernel_release_name} -name "*.ko.debug" -exec mv {} %{buildroot}/usr/lib/debug/lib/modules/%{_kernel_release_name}/ \;
 
 %post
-# Use grubby to manage bootloader entries
 grubby --add-kernel=/boot/vmlinuz-%{_kernel_release_name} \
        --title="Linux Kernel %{_kernel_release_name}" \
        --copy-default \
@@ -167,46 +168,49 @@ if [ $1 -eq 0 ]; then
     grubby --remove-kernel=/boot/vmlinuz-%{_kernel_release_name}
 fi
 
+%postun
+# Remove grubby entry on both upgrade and erase
+grubby --remove-kernel=/boot/vmlinuz-%{_kernel_release_name}
+
 %files
 %defattr(-,root,root,-)
 /boot/vmlinuz-%{_kernel_release_name}
 /boot/System.map-%{_kernel_release_name}
 /boot/config-%{_kernel_release_name}
-/lib/modules/%{_modname}/
+/lib/modules/%{_kernel_release_name}/
 
 %files headers
 %defattr(-,root,root,-)
-/usr/src/kernels/%{_modname}/include/
+/usr/src/kernels/%{_kernel_release_name}/include/
 
 %files devel
 %defattr(-,root,root,-)
-/usr/src/kernels/%{_modname}/.config
-/usr/src/kernels/%{_modname}/Module.symvers
-/usr/src/kernels/%{_modname}/scripts/
-/usr/src/kernels/%{_modname}/vmlinux
+/usr/src/kernels/%{_kernel_release_name}/.config
+/usr/src/kernels/%{_kernel_release_name}/Module.symvers
+/usr/src/kernels/%{_kernel_release_name}/scripts/
+/usr/src/kernels/%{_kernel_release_name}/vmlinux
 
 %files debuginfo
 %defattr(-,root,root,-)
-/usr/lib/debug/lib/modules/%{_modname}/
+/usr/lib/debug/vmlinux-%{_kernel_release_name}.debug
+/usr/lib/debug/lib/modules/%{_kernel_release_name}/
 
 %files firmware
 %defattr(-,root,root,-)
-/lib/firmware/
+%{_prefix}/lib/firmware/*
 
 %files doc
 %defattr(-,root,root,-)
-/usr/share/doc/%{_kernel_name}-%{version}/
+%{_prefix}/share/doc/%{_kernel_name}-%{version}/*
 
 %files tools
 %defattr(-,root,root,-)
-# List the specific kernel tools to be installed
 /usr/bin/perf
 /usr/bin/cpupower
 /usr/bin/turbostat
 
 %files tools-devel
 %defattr(-,root,root,-)
-# List the specific development files for the tools
 /usr/include/perf/
 
 %changelog

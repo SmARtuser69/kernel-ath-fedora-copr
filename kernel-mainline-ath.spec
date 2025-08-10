@@ -21,6 +21,7 @@ Version:        %{kernel_version}
 Release:        %{release_version}%{?dist}
 Summary:        The Linux kernel (patched)
 License:        GPLv2 and others
+Source0:        linux.tar.gz
 
 # Minimized list of essential BuildRequires for a core kernel and modules.
 BuildRequires:  gcc
@@ -91,6 +92,9 @@ cd linux
 git checkout -b aspm-patch 19272b37aa4f83ca52bdf9c16d5d81bdd1354494
 b4 am 20250716-ath-aspm-fix-v1-0-dd3e62c1b692@oss.qualcomm.com && mv *.mbx aspm-patch.mbx
 git apply aspm-patch.mbx
+cd ..
+tar -czvf linux.tar.gz linux
+%autosetup
 
 %build
 # Use the default configuration and build the entire kernel and its modules

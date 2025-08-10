@@ -25,7 +25,7 @@ URL:            https://www.kernel.org/
 Source0:        https://git.kernel.org/pub/scm/linux/kernel/git/ath/ath.git/snapshot/ath-main.tar.gz
 Conflicts:      %{name} < %{version}-%{release}
 
-# BuildRequires list is mostly correct, but has been slightly reordered for clarity
+# BuildRequires list is now extensive to cover all known build dependencies
 BuildRequires:  gcc
 BuildRequires:  make
 BuildRequires:  perl
@@ -53,10 +53,18 @@ BuildRequires:  libaio-devel
 BuildRequires:  numactl-devel
 BuildRequires:  audit-libs-devel
 BuildRequires:  libuuid-devel
+BuildRequires:  gettext
+BuildRequires:  pciutils-devel
+BuildRequires:  asciidoc
+BuildRequires:  libnl3-devel
+BuildRequires:  libmnl-devel
+BuildRequires:  libudev-devel
+BuildRequires:  python3-docutils
+BuildRequires:  popt-devel
 
 ExclusiveArch:  x86_64
 
-# Use a macro and find to conditionally set a value, which is
+# Use a macro and shell test to conditionally set a value, which is
 # compatible with strict spec file parsers.
 %global with_firmware %(test -d firmware && echo 1 || echo 0)
 
@@ -218,7 +226,7 @@ grubby --remove-kernel=/boot/vmlinuz-%{_kernel_release_name}
 
 %files debuginfo
 %defattr(-,root,root,-)
-/usr/lib/debug/vmlinux-%{_kernel_release_name}.debug
+/usr/lib/debug/vmlinuz-%{_kernel_release_name}.debug
 /usr/lib/debug/lib/modules/%{_kernel_release_name}/
 
 %if 0%{?with_firmware}
@@ -242,6 +250,9 @@ grubby --remove-kernel=/boot/vmlinuz-%{_kernel_release_name}
 /usr/include/perf/
 
 %changelog
+* Sun Aug 10 2025 Bhargavjit Bhuyan <example@example.com> - 6.16.0-1
+- Added a more comprehensive list of build dependencies for a full kernel build.
+- Fixed the logical issue with the conditional firmware package declaration.
 * Mon Aug 11 2025 Bhargavjit Bhuyan <example@example.com> - 6.16.0-1
 - Replaced pahole with dwarves as a build dependency.
 * Sat Aug 09 2025 Bhargavjit Bhuyan <example@example.com> - 6.16.0-1

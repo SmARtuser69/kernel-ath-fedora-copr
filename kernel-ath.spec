@@ -10,12 +10,6 @@
 %global mainline_subversion 16
 %global patchlevel 0
 %global kernel_version %{mainline_version}.%{mainline_subversion}.%{patchlevel}
-
-# Check if the firmware directory exists.
-# If it does not, the firmware package will not be built.
-if [ -d firmware ]; then
-    %global with_firmware 1
-fi
 %global release_version 1
 
 # Use macros for better portability and consistency
@@ -60,6 +54,12 @@ BuildRequires:  numactl-devel
 BuildRequires:  audit-libs-devel
 
 ExclusiveArch:  x86_64
+
+# Check if the firmware directory exists.
+# If it does not, the firmware package will not be built.
+if [ -d firmware ]; then
+    %global with_firmware 1
+fi
 
 %description
 The Linux kernel, the core of the Linux operating system. This package

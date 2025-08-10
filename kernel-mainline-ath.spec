@@ -21,7 +21,7 @@ Version:        %{kernel_version}
 Release:        %{release_version}%{?dist}
 Summary:        The Linux kernel (patched)
 License:        GPLv2 and others
-Source0:        https://github.com/torvalds/linux/archive/refs/tags/v6.16.tar.gz
+#Source0:        https://github.com/torvalds/linux/archive/refs/tags/v6.16.tar.gz
 
 # Minimized list of essential BuildRequires for a core kernel and modules.
 BuildRequires:  gcc

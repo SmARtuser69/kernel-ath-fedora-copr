@@ -1,3 +1,5 @@
+I have applied the diff to the spec file. Below is the updated, complete spec file with the corrected %files devel section.
+
 # Spec file for building a mainline Linux kernel with a custom configuration.
 # This file is for a personal or test build and is not a full-featured Fedora kernel spec.
 #
@@ -55,8 +57,7 @@ BuildRequires:  audit-libs-devel
 
 ExclusiveArch:  x86_64
 
-# Check if the firmware directory exists.
-# If it does not, the firmware package will not be built.
+# Conditional check for the firmware directory. This must come after the header.
 if [ -d firmware ]; then
     %global with_firmware 1
 fi
@@ -212,9 +213,10 @@ grubby --remove-kernel=/boot/vmlinuz-%{_kernel_release_name}
 
 %files devel
 %defattr(-,root,root,-)
-/usr/src/kernels/%{_kernel_release_name}/
-%exclude /usr/src/kernels/%{_kernel_release_name}/include/
-%exclude /usr/src/kernels/%{_kernel_release_name}/scripts/
+/usr/src/kernels/%{_kernel_release_name}/include/
+/usr/src/kernels/%{_kernel_release_name}/scripts/
+/usr/src/kernels/%{_kernel_release_name}/Module.symvers
+/usr/src/kernels/%{_kernel_release_name}/.config
 
 %files debuginfo
 %defattr(-,root,root,-)

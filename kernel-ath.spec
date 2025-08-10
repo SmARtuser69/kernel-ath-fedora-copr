@@ -55,11 +55,6 @@ BuildRequires:  audit-libs-devel
 
 ExclusiveArch:  x86_64
 
-# Conditional check for the firmware directory. This must come after the header.
-if [ -d firmware ]; then
-    %global with_firmware 1
-fi
-
 %description
 The Linux kernel, the core of the Linux operating system. This package
 contains a specific build of the mainline kernel from the 'ath' git tree.
@@ -123,6 +118,11 @@ build applications that use the kernel tools.
 
 %prep
 %setup -q -n ath-main
+# Conditional check for the firmware directory. This must be in a section
+# that allows shell scripting.
+if [ -d firmware ]; then
+    %global with_firmware 1
+fi
 
 %build
 # Use the default configuration and build the entire kernel and its modules

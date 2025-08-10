@@ -25,7 +25,6 @@ License:        GPLv2 and others
 # Minimized list of essential BuildRequires for a core kernel and modules.
 BuildRequires:  gcc
 BuildRequires:  make
-BuildRequires:  perl
 BuildRequires:  python3
 BuildRequires:  bc
 BuildRequires:  elfutils-libelf-devel
@@ -39,9 +38,7 @@ BuildRequires:  grubby
 BuildRequires:  kmod
 BuildRequires:  xz
 BuildRequires:  zlib-devel
-BuildRequires:  libcap-devel
 BuildRequires:  glibc-devel
-BuildRequires:  elfutils-devel
 BuildRequires:  b4
 
 

@@ -94,6 +94,7 @@ b4 am 20250716-ath-aspm-fix-v1-0-dd3e62c1b692@oss.qualcomm.com && mv *.mbx aspm-
 git apply aspm-patch.mbx
 cd ..
 tar -czvf linux.tar.gz linux
+Source0:        linux.tar.gz
 %autosetup
 
 %build

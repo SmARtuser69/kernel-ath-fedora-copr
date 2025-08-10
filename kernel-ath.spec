@@ -1,5 +1,3 @@
-I have applied the diff to the spec file. Below is the updated, complete spec file with the corrected %files devel section.
-
 # Spec file for building a mainline Linux kernel with a custom configuration.
 # This file is for a personal or test build and is not a full-featured Fedora kernel spec.
 #

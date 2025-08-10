@@ -10,6 +10,12 @@
 %global mainline_subversion 16
 %global patchlevel 0
 %global kernel_version %{mainline_version}.%{mainline_subversion}.%{patchlevel}
+
+# Check if the firmware directory exists.
+# If it does not, the firmware package will not be built.
+if [ -d firmware ]; then
+    %global with_firmware 1
+fi
 %global release_version 1
 
 # Use macros for better portability and consistency
@@ -84,12 +90,15 @@ Requires:       %{_kernel_name} = %{version}-%{release}
 %description debuginfo
 This package provides debug symbols for the Linux kernel and its modules.
 
+# Conditionally define the firmware package
+%if 0%{?with_firmware}
 # Firmware subpackage
 %package firmware
 Summary:        Firmware files for the Linux kernel
-BuildArch:      noarch
+BuildArch: noarch
 %description firmware
 This package contains the firmware binary blobs required by the Linux kernel.
+%endif
 
 # Documentation subpackage
 %package doc
@@ -150,8 +159,9 @@ cp -a scripts %{buildroot}/usr/src/kernels/%{_kernel_release_name}/
 cp -a .config %{buildroot}/usr/src/kernels/%{_kernel_release_name}/
 
 # Install firmware only if the 'firmware' directory exists
-# This fixes the 'No such file or directory' error
-if [ -d "firmware" ]; then
+# This fixes the 'No such file or directory' error and is consistent
+# with the conditional packaging.
+if [ -d firmware ]; then
   mkdir -p %{buildroot}/lib/firmware
   find firmware -type f -exec install -Dm644 '{}' '%{buildroot}/lib/firmware/{}' ';'
 fi
@@ -184,10 +194,6 @@ grubby --add-kernel=/boot/vmlinuz-%{_kernel_release_name} \
        --title="Linux Kernel %{_kernel_release_name}" \
        --copy-default \
        --make-default
-
-%preun
-# Removed redundant grubby command. The one in %postun is sufficient.
-# No action needed here.
 
 %postun
 # This handles both upgrade and erase

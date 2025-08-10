@@ -55,11 +55,9 @@ BuildRequires:  audit-libs-devel
 
 ExclusiveArch:  x86_64
 
-# Conditional check for the firmware directory. This must be in the spec file header
-# to be processed correctly before package declarations.
-if [ -d firmware ]; then
-    %global with_firmware 1
-fi
+# Use a macro and find to conditionally set a value, which is
+# compatible with strict spec file parsers.
+%global with_firmware %(test -d firmware && echo 1 || echo 0)
 
 %description
 The Linux kernel, the core of the Linux operating system. This package

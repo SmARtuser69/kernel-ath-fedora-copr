@@ -100,7 +100,7 @@ git apply aspm-patch.mbx
 # Note: This uses a generic 'defconfig' which may not be optimized.
 NPROCS=$(/usr/bin/getconf _NPROCESSORS_ONLN)
 cd linux
-make defconfig
+make olddefconfig
 make -j${NPROCS} bzImage
 make -j${NPROCS} modules
 

@@ -86,17 +86,15 @@ This package contains the firmware binary blobs required by the Linux kernel.
 # - tools and tools-devel (requires rsync, pciutils-devel, etc.)
 
 %prep
-%setup -q -n ath-main
-
-%build
-# Use the default configuration and build the entire kernel and its modules
-# Note: This uses a generic 'defconfig' which may not be optimized.
 git clone https://github.com/torvalds/linux.git
 cd linux
 git checkout -b aspm-patch 19272b37aa4f83ca52bdf9c16d5d81bdd1354494
 b4 am 20250716-ath-aspm-fix-v1-0-dd3e62c1b692@oss.qualcomm.com && mv *.mbx aspm-patch.mbx
 git apply aspm-patch.mbx
 
+%build
+# Use the default configuration and build the entire kernel and its modules
+# Note: This uses a generic 'defconfig' which may not be optimized.
 NPROCS=$(/usr/bin/getconf _NPROCESSORS_ONLN)
 make defconfig
 make -j${NPROCS} bzImage
@@ -177,3 +175,4 @@ grubby --remove-kernel=/boot/vmlinuz-%{_kernel_release_name}
 - Trimmed non-essential build dependencies for a more focused build.
 - Removed subpackages for debuginfo, documentation, and tools.
 * Sun Aug 10 2025 FlyingSaturn <example@example.com> - 6.16-rc1
+- Made some changes

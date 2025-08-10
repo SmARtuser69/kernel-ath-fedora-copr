@@ -23,7 +23,6 @@ Summary:        The Linux kernel (mainline from ath git tree)
 License:        GPLv2
 URL:            https://www.kernel.org/
 Source0:        https://git.kernel.org/pub/scm/linux/kernel/git/ath/ath.git/snapshot/ath-main.tar.gz
-Conflicts:      %{name} < %{version}-%{release}
 
 # BuildRequires list is now extensive to cover all known build dependencies
 BuildRequires:  gcc

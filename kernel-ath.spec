@@ -149,9 +149,12 @@ cp -a Module.symvers %{buildroot}/usr/src/kernels/%{_kernel_release_name}/
 cp -a scripts %{buildroot}/usr/src/kernels/%{_kernel_release_name}/
 cp -a .config %{buildroot}/usr/src/kernels/%{_kernel_release_name}/
 
-# Install firmware
-mkdir -p %{buildroot}/lib/firmware
-find firmware -type f -exec install -Dm644 {} %{buildroot}/lib/firmware/{} \;
+# Install firmware only if the 'firmware' directory exists
+# This fixes the 'No such file or directory' error
+if [ -d "firmware" ]; then
+  mkdir -p %{buildroot}/lib/firmware
+  find firmware -type f -exec install -Dm644 '{}' '%{buildroot}/lib/firmware/{}' ';'
+fi
 
 # Install documentation
 mkdir -p %{buildroot}/usr/share/doc/%{_kernel_name}-%{version}
@@ -163,9 +166,9 @@ make -C tools DESTDIR=%{buildroot} install
 # Generate debug symbols and strip binaries
 mkdir -p %{buildroot}/usr/lib/debug
 # vmlinux is stripped and the debug symbols are saved
-cp vmlinux %{buildroot}/usr/lib/debug/vmlinux-%{_kernel_release_name}.debug
+cp vmlinux %{buildroot}/usr/lib/debug/vmlinuz-%{_kernel_release_name}.debug
 strip --strip-debug vmlinux
-objcopy --add-gnu-debuglink=%{buildroot}/usr/lib/debug/vmlinux-%{_kernel_release_name}.debug vmlinux
+objcopy --add-gnu-debuglink=%{buildroot}/usr/lib/debug/vmlinuz-%{_kernel_release_name}.debug vmlinux
 # Create the symlink to vmlinux in the devel directory
 ln -s ../../lib/modules/%{_kernel_release_name}/vmlinux %{buildroot}/usr/src/kernels/%{_kernel_release_name}/vmlinux
 
@@ -212,9 +215,11 @@ grubby --remove-kernel=/boot/vmlinuz-%{_kernel_release_name}
 /usr/lib/debug/vmlinux-%{_kernel_release_name}.debug
 /usr/lib/debug/lib/modules/%{_kernel_release_name}/
 
+%if 0%{?with_firmware}
 %files firmware
 %defattr(-,root,root,-)
 /lib/firmware/
+%endif
 
 %files doc
 %defattr(-,root,root,-)
@@ -231,7 +236,7 @@ grubby --remove-kernel=/boot/vmlinuz-%{_kernel_release_name}
 /usr/include/perf/
 
 %changelog
-* Sat Aug 09 2025 Bhargavjit Bhuyan <example@example.com> - 6.16.0-1
-- Initial build of mainline kernel 6.16.0 for Fedora COPR.
 * Mon Aug 11 2025 Bhargavjit Bhuyan <example@example.com> - 6.16.0-1
 - Replaced pahole with dwarves as a build dependency.
+* Sat Aug 09 2025 Bhargavjit Bhuyan <example@example.com> - 6.16.0-1
+- Initial build of mainline kernel 6.16.0 for Fedora COPR.

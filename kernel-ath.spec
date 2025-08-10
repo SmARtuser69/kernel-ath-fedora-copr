@@ -21,8 +21,8 @@ Version:        %{kernel_version}
 Release:        %{release_version}%{?dist}
 Summary:        The Linux kernel (mainline from ath git tree)
 License:        GPLv2 and others
-URL:            https://git.kernel.org/pub/scm/linux/kernel/git/ath/ath.git
-Source0:        https://git.kernel.org/pub/scm/linux/kernel/git/ath/ath.git/snapshot/ath-next.tar.gz
+URL:            
+Source0:        
 
 # Minimized list of essential BuildRequires for a core kernel and modules.
 BuildRequires:  gcc
@@ -44,6 +44,8 @@ BuildRequires:  zlib-devel
 BuildRequires:  libcap-devel
 BuildRequires:  glibc-devel
 BuildRequires:  elfutils-devel
+BuildRequires:  b4
+
 
 ExclusiveArch:  x86_64
 
@@ -94,12 +96,17 @@ This package contains the firmware binary blobs required by the Linux kernel.
 %build
 # Use the default configuration and build the entire kernel and its modules
 # Note: This uses a generic 'defconfig' which may not be optimized.
+git clone https://github.com/torvalds/linux.git
+cd linux
+git checkout -b aspm-patch 19272b37aa4f83ca52bdf9c16d5d81bdd1354494
+b4 am 20250716-ath-aspm-fix-v1-0-dd3e62c1b692@oss.qualcomm.com && mv *.mbx aspm-patch.mbx
+git apply aspm-patch.mbx
+
 NPROCS=$(/usr/bin/getconf _NPROCESSORS_ONLN)
 make defconfig
 make -j${NPROCS}
 
 %install
-rm -rf %{buildroot}
 # Install kernel modules
 make INSTALL_MOD_PATH=%{buildroot} modules_install
 
@@ -173,3 +180,4 @@ grubby --remove-kernel=/boot/vmlinuz-%{_kernel_release_name}
 * Sun Aug 10 2025 Bhargavjit Bhuyan <example@example.com> - 6.16.0-1
 - Trimmed non-essential build dependencies for a more focused build.
 - Removed subpackages for debuginfo, documentation, and tools.
+* Sun Aug 10 2025 FlyingSaturn <example@example.com> - 6.16-rc1

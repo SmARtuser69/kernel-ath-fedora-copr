@@ -41,6 +41,7 @@ BuildRequires:  xz
 BuildRequires:  zlib-devel
 BuildRequires:  glibc-devel
 BuildRequires:  b4
+BuildRequires:  git
 
 
 ExclusiveArch:  x86_64

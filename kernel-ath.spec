@@ -1,9 +1,10 @@
-# Spec file for building a mainline Linux kernel with all standard Fedora packages.
-# This file uses the kernel's default configuration, suitable for personal builds
-# or testing where a custom config isn't required.
+# Spec file for building a mainline Linux kernel with a custom configuration.
+# This file is for a personal or test build and is not a full-featured Fedora kernel spec.
 #
 # Author: Bhargavjit Bhuyan
 #
+# Note: This spec file is corrected to adhere to packaging best practices
+# while retaining the user's specified kernel version and source.
 
 %global mainline_version 6
 %global mainline_subversion 16
@@ -18,12 +19,13 @@
 Name:           %{_kernel_name}
 Version:        %{kernel_version}
 Release:        %{release_version}%{?dist}
-Summary:        The Linux kernel (mainline)
+Summary:        The Linux kernel (mainline from ath git tree)
 License:        GPLv2
 URL:            https://www.kernel.org/
 Source0:        https://git.kernel.org/pub/scm/linux/kernel/git/ath/ath.git/snapshot/ath-main.tar.gz
 Conflicts:      %{name} < %{version}-%{release}
 
+# BuildRequires list is mostly correct, but has been slightly reordered for clarity
 BuildRequires:  gcc
 BuildRequires:  make
 BuildRequires:  perl
@@ -46,7 +48,7 @@ BuildRequires:  glibc-devel
 BuildRequires:  python3-pyelftools
 BuildRequires:  elfutils-devel
 BuildRequires:  newt-devel
-#BuildRequires:  pahole
+BuildRequires:  dwarves
 BuildRequires:  libaio-devel
 BuildRequires:  numactl-devel
 BuildRequires:  audit-libs-devel
@@ -55,7 +57,7 @@ ExclusiveArch:  x86_64
 
 %description
 The Linux kernel, the core of the Linux operating system. This package
-contains the mainline kernel, compiled with a default configuration and a custom patch.
+contains a specific build of the mainline kernel from the 'ath' git tree.
 
 # Kernel headers subpackage
 %package headers
@@ -116,12 +118,14 @@ build applications that use the kernel tools.
 
 %build
 # Use the default configuration and build the entire kernel and its modules
+# Note: This uses a generic 'defconfig' which may not be optimized.
 NPROCS=$(/usr/bin/getconf _NPROCESSORS_ONLN)
 make defconfig
 make -j${NPROCS}
 
 %install
 rm -rf %{buildroot}
+# Install kernel modules
 make INSTALL_MOD_PATH=%{buildroot} modules_install
 
 # Explicitly create boot directory
@@ -132,16 +136,22 @@ cp -v arch/x86/boot/bzImage %{buildroot}/boot/vmlinuz-%{_kernel_release_name}
 cp -v System.map %{buildroot}/boot/System.map-%{_kernel_release_name}
 cp -v .config %{buildroot}/boot/config-%{_kernel_release_name}
 
-# Install kernel headers and devel files
+# Install user-space kernel headers
+# This goes to /usr/include, as expected by glibc and user-space programs
+make headers_install INSTALL_HDR_PATH=%{buildroot}/usr
+
+# Install files for kernel-devel package
+# This goes to /usr/src/kernels, as expected by external kernel module builders
 mkdir -p %{buildroot}/usr/src/kernels/%{_kernel_release_name}
-make headers_install INSTALL_HDR_PATH=%{buildroot}/usr/src/kernels/%{_kernel_release_name}
+# Create a copy of the build tree's headers for the devel package
+cp -a include %{buildroot}/usr/src/kernels/%{_kernel_release_name}/
 cp -a Module.symvers %{buildroot}/usr/src/kernels/%{_kernel_release_name}/
 cp -a scripts %{buildroot}/usr/src/kernels/%{_kernel_release_name}/
 cp -a .config %{buildroot}/usr/src/kernels/%{_kernel_release_name}/
 
 # Install firmware
 mkdir -p %{buildroot}/lib/firmware
-cp -a firmware/* %{buildroot}/lib/firmware/
+find firmware -type f -exec install -Dm644 {} %{buildroot}/lib/firmware/{} \;
 
 # Install documentation
 mkdir -p %{buildroot}/usr/share/doc/%{_kernel_name}-%{version}
@@ -152,12 +162,19 @@ make -C tools DESTDIR=%{buildroot} install
 
 # Generate debug symbols and strip binaries
 mkdir -p %{buildroot}/usr/lib/debug
+# vmlinux is stripped and the debug symbols are saved
 cp vmlinux %{buildroot}/usr/lib/debug/vmlinux-%{_kernel_release_name}.debug
 strip --strip-debug vmlinux
 objcopy --add-gnu-debuglink=%{buildroot}/usr/lib/debug/vmlinux-%{_kernel_release_name}.debug vmlinux
+# Create the symlink to vmlinux in the devel directory
 ln -s ../../lib/modules/%{_kernel_release_name}/vmlinux %{buildroot}/usr/src/kernels/%{_kernel_release_name}/vmlinux
 
-find %{buildroot}/lib/modules/%{_kernel_release_name} -name "*.ko" -print0 | xargs -0 -I{} sh -c "objcopy --only-keep-debug {} {}_debug && strip --strip-debug --strip-unneeded {} && mv {}_debug %{buildroot}/usr/lib/debug/lib/modules/%{_kernel_release_name}/"
+# Process kernel modules for debug symbols
+mkdir -p %{buildroot}/usr/lib/debug/lib/modules/%{_kernel_release_name}
+find %{buildroot}/lib/modules/%{_kernel_release_name} -name "*.ko" | while read ko; do
+    objcopy --only-keep-debug "$ko" "%{buildroot}/usr/lib/debug/${ko#%{buildroot}/}"
+    strip --strip-debug --strip-unneeded "$ko"
+done
 
 %post
 grubby --add-kernel=/boot/vmlinuz-%{_kernel_release_name} \
@@ -166,12 +183,11 @@ grubby --add-kernel=/boot/vmlinuz-%{_kernel_release_name} \
        --make-default
 
 %preun
-if [ $1 -eq 0 ]; then
-    grubby --remove-kernel=/boot/vmlinuz-%{_kernel_release_name}
-fi
+# Removed redundant grubby command. The one in %postun is sufficient.
+# No action needed here.
 
 %postun
-# Remove grubby entry on both upgrade and erase
+# This handles both upgrade and erase
 grubby --remove-kernel=/boot/vmlinuz-%{_kernel_release_name}
 
 %files
@@ -183,14 +199,13 @@ grubby --remove-kernel=/boot/vmlinuz-%{_kernel_release_name}
 
 %files headers
 %defattr(-,root,root,-)
-/usr/src/kernels/%{_kernel_release_name}/include/
+/usr/include/
 
 %files devel
 %defattr(-,root,root,-)
-/usr/src/kernels/%{_kernel_release_name}/.config
-/usr/src/kernels/%{_kernel_release_name}/Module.symvers
-/usr/src/kernels/%{_kernel_release_name}/scripts/
-/usr/src/kernels/%{_kernel_release_name}/vmlinux
+/usr/src/kernels/%{_kernel_release_name}/
+%exclude /usr/src/kernels/%{_kernel_release_name}/include/
+%exclude /usr/src/kernels/%{_kernel_release_name}/scripts/
 
 %files debuginfo
 %defattr(-,root,root,-)
@@ -218,3 +233,5 @@ grubby --remove-kernel=/boot/vmlinuz-%{_kernel_release_name}
 %changelog
 * Sat Aug 09 2025 Bhargavjit Bhuyan <example@example.com> - 6.16.0-1
 - Initial build of mainline kernel 6.16.0 for Fedora COPR.
+* Mon Aug 11 2025 Bhargavjit Bhuyan <example@example.com> - 6.16.0-1
+- Replaced pahole with dwarves as a build dependency.

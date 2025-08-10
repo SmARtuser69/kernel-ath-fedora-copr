@@ -52,6 +52,7 @@ BuildRequires:  dwarves
 BuildRequires:  libaio-devel
 BuildRequires:  numactl-devel
 BuildRequires:  audit-libs-devel
+BuildRequires:  libuuid-devel
 
 ExclusiveArch:  x86_64
 

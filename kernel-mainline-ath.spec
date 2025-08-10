@@ -43,6 +43,7 @@ BuildRequires:  glibc-devel
 BuildRequires:  b4
 BuildRequires:  git
 BuildRequires:  gnupg2
+BuildRequires:  rsync
 
 
 ExclusiveArch:  x86_64

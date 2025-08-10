@@ -40,7 +40,7 @@ BuildRequires:  xz
 BuildRequires:  zlib-devel
 BuildRequires:  glibc-devel
 BuildRequires:  b4
-BuildRequired:  tee
+BuildRequired:  coreutils
 
 
 ExclusiveArch:  x86_64

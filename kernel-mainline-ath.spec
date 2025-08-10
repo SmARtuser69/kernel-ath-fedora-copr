@@ -99,7 +99,7 @@ git apply aspm-patch.mbx
 # Use the default configuration and build the entire kernel and its modules
 # Note: This uses a generic 'defconfig' which may not be optimized.
 NPROCS=$(/usr/bin/getconf _NPROCESSORS_ONLN)
-make olddefconfig
+make defconfig
 make -j${NPROCS} bzImage
 make -j${NPROCS} modules
 

@@ -19,10 +19,8 @@
 Name:           %{_kernel_name}
 Version:        %{kernel_version}
 Release:        %{release_version}%{?dist}
-Summary:        The Linux kernel (mainline from ath git tree)
+Summary:        The Linux kernel (patched)
 License:        GPLv2 and others
-URL:            
-Source0:        
 
 # Minimized list of essential BuildRequires for a core kernel and modules.
 BuildRequires:  gcc

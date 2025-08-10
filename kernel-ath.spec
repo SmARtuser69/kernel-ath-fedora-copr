@@ -46,7 +46,7 @@ BuildRequires:  glibc-devel
 BuildRequires:  python3-pyelftools
 BuildRequires:  elfutils-devel
 BuildRequires:  newt-devel
-BuildRequires:  pahole
+#BuildRequires:  pahole
 BuildRequires:  libaio-devel
 BuildRequires:  numactl-devel
 BuildRequires:  audit-libs-devel

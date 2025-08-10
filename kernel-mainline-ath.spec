@@ -108,7 +108,7 @@ make -j${NPROCS} modules
 %install
 # Install kernel modules
 cd linux
-make INSTALL_MOD_PATH=%{buildroot} modules_install
+make INSTALL_MOD_PATH=%{buildroot} KERNELRELEASE=%{_kernel_release_name} modules_install
 
 # Explicitly create boot directory
 mkdir -p %{buildroot}/boot

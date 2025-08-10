@@ -42,6 +42,7 @@ BuildRequires:  zlib-devel
 BuildRequires:  glibc-devel
 BuildRequires:  b4
 BuildRequires:  git
+BuildRequires:  gnupg2
 
 
 ExclusiveArch:  x86_64

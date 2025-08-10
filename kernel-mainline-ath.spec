@@ -120,7 +120,7 @@ cp -v .config %{buildroot}/boot/config-%{_kernel_release_name}
 
 # Install user-space kernel headers
 # This goes to /usr/include, as expected by glibc and user-space programs
-make headers_install INSTALL_HDR_PATH=%{buildroot}/usr
+make headers_install INSTALL_HDR_PATH=%{buildroot}/usr KERNELRELEASE=%{_kernel_release_name}
 
 # Install files for kernel-devel package
 # This goes to /usr/src/kernels, as expected by external kernel module builders

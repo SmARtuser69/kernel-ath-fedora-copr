@@ -40,6 +40,7 @@ BuildRequires:  xz
 BuildRequires:  zlib-devel
 BuildRequires:  glibc-devel
 BuildRequires:  b4
+BuildRequired:  tee
 
 
 ExclusiveArch:  x86_64
@@ -99,7 +100,8 @@ git apply aspm-patch.mbx
 
 NPROCS=$(/usr/bin/getconf _NPROCESSORS_ONLN)
 make defconfig
-make -j${NPROCS}
+make -j${NPROCS} bzImage
+make -j${NPROCS} modules
 
 %install
 # Install kernel modules

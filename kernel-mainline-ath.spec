@@ -67,7 +67,7 @@ glibc to build user-space applications.
 
 # Kernel devel subpackage
 %package devel
-Summary:  Development files for the Linux kernel
+Summary:  Development files for the Linux kernel
 Requires: kernel-headers = %{version}-%{release}
 Provides: kernel-devel = %{version}-%{release}
 %description devel
@@ -96,14 +96,15 @@ git checkout -b aspm-patch 19272b37aa4f83ca52bdf9c16d5d81bdd1354494
 b4 am 20250716-ath-aspm-fix-v1-0-dd3e62c1b692@oss.qualcomm.com && mv *.mbx aspm-patch.mbx
 git apply aspm-patch.mbx
 cp %{SOURCE0} ./.config
-pwd
+# pwd
 
 %build
-# Use the configuration from the currently running kernel as a base.
-# This ensures a more complete set of drivers and features are included.
-# : This assumes a config file exists for the host kernel.
+# Change into the kernel source directory
+cd linux
+
 NPROCS=$(/usr/bin/getconf _NPROCESSORS_ONLN)
-#make olddefconfig
+
+# Use the configuration from the custom config file.
 make olddefconfig
 
 # Now build the kernel and modules with the complete configuration.
@@ -111,6 +112,9 @@ make -j${NPROCS} bzImage
 make -j${NPROCS} modules
 
 %install
+# Change into the kernel source directory before installing
+cd linux
+
 # Install kernel modules
 make INSTALL_MOD_PATH=%{buildroot} modules_install
 
@@ -118,81 +122,4 @@ make INSTALL_MOD_PATH=%{buildroot} modules_install
 mkdir -p %{buildroot}/boot
 
 # Copy built kernel files
-cp -v arch/x86/boot/bzImage %{buildroot}/boot/vmlinuz-%{_kernel_release_name}
-cp -v System.map %{buildroot}/boot/System.map-%{_kernel_release_name}
-cp -v .config %{buildroot}/boot/config-%{_kernel_release_name}
-
-# Create the initial ramdisk (initramfs) using dracut
-# This is a critical step for modern systems to boot correctly
-dracut --force %{buildroot}/boot/initramfs-%{_kernel_release_name}.img %{_kernel_release_name}
-
-# Install user-space kernel headers
-# This goes to /usr/include, as expected by glibc and user-space programs
-make headers_install INSTALL_HDR_PATH=%{buildroot}/usr
-
-# Install files for kernel-devel package
-# This goes to /usr/src/kernels, as expected by external kernel module builders
-mkdir -p %{buildroot}/usr/src/kernels/%{_kernel_release_name}
-# Create a copy of the build tree's headers for the devel package
-cp -a include %{buildroot}/usr/src/kernels/%{_kernel_release_name}/
-cp -a Module.symvers %{buildroot}/usr/src/kernels/%{_kernel_release_name}/
-cp -a scripts %{buildroot}/usr/src/kernels/%{_kernel_release_name}/
-cp -a .config %{buildroot}/usr/src/kernels/%{_kernel_release_name}/
-cp -a Makefile %{buildroot}/usr/src/kernels/%{_kernel_release_name}/
-
-# Install firmware only if the 'firmware' directory exists
-# This handles the 'No such file or directory' error and is consistent
-# with the conditional packaging.
-if [ -d firmware ]; then
- mkdir -p %{buildroot}/lib/firmware
- find firmware -type f -exec install -Dm644 '{}' '%{buildroot}/lib/firmware/{}' ';'
-fi
-
-%post
-# Use grubby to add the new kernel to the bootloader
-grubby --add-kernel=/boot/vmlinuz-%{_kernel_release_name} \
- --title="Linux Kernel %{_kernel_release_name}" \
- --copy-default \
- --make-default
-
-%postun
-# This handles both upgrade and erase
-grubby --remove-kernel=/boot/vmlinuz-%{_kernel_release_name}
-
-%files
-%defattr(-,root,root,-)
-/boot/vmlinuz-%{_kernel_release_name}
-/boot/System.map-%{_kernel_release_name}
-/boot/config-%{_kernel_release_name}
-/boot/initramfs-%{_kernel_release_name}.img
-/lib/modules/%{_kernel_release_name}/
-
-%files headers
-%defattr(-,root,root,-)
-/usr/include/
-
-%files devel
-%defattr(-,root,root,-)
-/usr/src/kernels/%{_kernel_release_name}/include/
-/usr/src/kernels/%{_kernel_release_name}/scripts/
-/usr/src/kernels/%{_kernel_release_name}/Module.symvers
-/usr/src/kernels/%{_kernel_release_name}/.config
-/usr/src/kernels/%{_kernel_release_name}/Makefile
-
-%if 0%{?with_firmware}
-%files firmware
-%defattr(-,root,root,-)
-/lib/firmware/
-%endif
-
-%changelog
-* Mon Aug 11 2025 Bhargavjit Bhuyan <example@example.com> - 6.16.0-1
-- Changed build configuration from 'defconfig' to a custom config based on the host kernel for a more complete build.
-* Mon Aug 11 2025 Bhargavjit Bhuyan <example@example.com> - 6.16.0-1
-- Fixed a critical issue by adding the dracut utility to generate the initramfs.
-- Added dracut to BuildRequires and the initramfs file to the main package files.
-* Sun Aug 10 2025 Bhargavjit Bhuyan <example@example.com> - 6.16.0-1
-- Trimmed non-essential build dependencies for a more focused build.
-- Removed subpackages for debuginfo, documentation, and tools.
-* Sun Aug 10 2025 FlyingSaturn <example@example.com> - 6.16-rc1
-- Made some changes
+cp -v arch/x86/boot/bzImage %{buildroot}/boot/vmlinuz-%{

@@ -97,7 +97,7 @@ git checkout -b aspm-patch 19272b37aa4f83ca52bdf9c16d5d81bdd1354494
 b4 am 20250716-ath-aspm-fix-v1-0-dd3e62c1b692@oss.qualcomm.com && mv *.mbx aspm-patch.mbx
 git apply aspm-patch.mbx
 cp %{SOURCE0} ./.config
-%patch0 -p1
+%patch 0 -p1
 # pwd
 
 %build

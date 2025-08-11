@@ -108,8 +108,10 @@ NPROCS=$(/usr/bin/getconf _NPROCESSORS_ONLN)
 make olddefconfig
 
 # Now build the kernel and modules with the complete configuration.
-make -j${NPROCS} bzImage
-make -j${NPROCS} modules
+# The V=1 flag is added to provide verbose output, which should reveal the underlying
+# compiler error that is causing the build to fail.
+make -j${NPROCS} V=1 bzImage
+make -j${NPROCS} V=1 modules
 
 %install
 # Change into the kernel source directory before installing

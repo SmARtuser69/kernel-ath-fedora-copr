@@ -103,6 +103,7 @@ cp %{SOURCE0} ./.config
 # : This assumes a config file exists for the host kernel.
 NPROCS=$(/usr/bin/getconf _NPROCESSORS_ONLN)
 #make olddefconfig
+make prepare
 
 # Now build the kernel and modules with the complete configuration.
 make -j${NPROCS} bzImage

@@ -16,35 +16,35 @@
 %global _kernel_name kernel-mainline-ath
 %global _kernel_release_name %{version}-%{release}
 
-Name:           %{_kernel_name}
-Version:        %{kernel_version}
-Release:        %{release_version}%{?dist}
-Summary:        The Linux kernel (patched)
-License:        GPLv2 and others
-#Source0:        https://github.com/torvalds/linux/archive/refs/tags/v6.16.tar.gz
+Name: %{_kernel_name}
+Version: %{kernel_version}
+Release: %{release_version}%{?dist}
+Summary: The Linux kernel (patched)
+License: GPLv2 and others
+#Source0: https://github.com/torvalds/linux/archive/refs/tags/v6.16.tar.gz
 
 # Minimized list of essential BuildRequires for a core kernel and modules.
-BuildRequires:  gcc
-BuildRequires:  make
-BuildRequires:  python3
-BuildRequires:  bc
-BuildRequires:  elfutils-libelf-devel
-BuildRequires:  ncurses-devel
-BuildRequires:  openssl-devel
-BuildRequires:  rpm-build
-BuildRequires:  bison
-BuildRequires:  flex
-BuildRequires:  python3-devel
-BuildRequires:  grubby
-BuildRequires:  kmod
-BuildRequires:  xz
-BuildRequires:  zlib-devel
-BuildRequires:  glibc-devel
-BuildRequires:  b4
-BuildRequires:  git
-BuildRequires:  dracut
+BuildRequires: gcc
+BuildRequires: make
+BuildRequires: python3
+BuildRequires: bc
+BuildRequires: elfutils-libelf-devel
+BuildRequires: ncurses-devel
+BuildRequires: openssl-devel
+BuildRequires: rpm-build
+BuildRequires: bison
+BuildRequires: flex
+BuildRequires: python3-devel
+BuildRequires: grubby
+BuildRequires: kmod
+BuildRequires: xz
+BuildRequires: zlib-devel
+BuildRequires: glibc-devel
+BuildRequires: b4
+BuildRequires: git
+BuildRequires: dracut
 
-ExclusiveArch:  x86_64
+ExclusiveArch: x86_64
 
 # Use a macro and shell test to conditionally set a value, which is
 # compatible with strict spec file parsers.
@@ -56,18 +56,18 @@ contains a specific build of the mainline kernel from the 'ath' git tree.
 
 # Kernel headers subpackage
 %package headers
-Summary:        Header files for the Linux kernel
-BuildArch:      noarch
-Provides:       kernel-headers = %{version}-%{release}
+Summary: Header files for the Linux kernel
+BuildArch: noarch
+Provides: kernel-headers = %{version}-%{release}
 %description headers
 This package provides the kernel header files. These header files are used by
 glibc to build user-space applications.
 
 # Kernel devel subpackage
 %package devel
-Summary:        Development files for the Linux kernel
-Requires:       kernel-headers = %{version}-%{release}
-Provides:       kernel-devel = %{version}-%{release}
+Summary:  Development files for the Linux kernel
+Requires: kernel-headers = %{version}-%{release}
+Provides: kernel-devel = %{version}-%{release}
 %description devel
 This package provides the development files needed to build external kernel
 modules.
@@ -76,7 +76,7 @@ modules.
 %if 0%{?with_firmware}
 # Firmware subpackage
 %package firmware
-Summary:        Firmware files for the Linux kernel
+Summary: Firmware files for the Linux kernel
 BuildArch: noarch
 %description firmware
 This package contains the firmware binary blobs required by the Linux kernel.
@@ -136,16 +136,16 @@ cp -a Makefile %{buildroot}/usr/src/kernels/%{_kernel_release_name}/
 # This handles the 'No such file or directory' error and is consistent
 # with the conditional packaging.
 if [ -d firmware ]; then
-  mkdir -p %{buildroot}/lib/firmware
-  find firmware -type f -exec install -Dm644 '{}' '%{buildroot}/lib/firmware/{}' ';'
+ mkdir -p %{buildroot}/lib/firmware
+ find firmware -type f -exec install -Dm644 '{}' '%{buildroot}/lib/firmware/{}' ';'
 fi
 
 %post
 # Use grubby to add the new kernel to the bootloader
 grubby --add-kernel=/boot/vmlinuz-%{_kernel_release_name} \
-       --title="Linux Kernel %{_kernel_release_name}" \
-       --copy-default \
-       --make-default
+ --title="Linux Kernel %{_kernel_release_name}" \
+ --copy-default \
+ --make-default
 
 %postun
 # This handles both upgrade and erase

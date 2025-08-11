@@ -122,4 +122,80 @@ make INSTALL_MOD_PATH=%{buildroot} modules_install
 mkdir -p %{buildroot}/boot
 
 # Copy built kernel files
-cp -v arch/x86/boot/bzImage %{buildroot}/boot/vmlinuz-%{
+cp -v arch/x86/boot/bzImage %{buildroot}/boot/vmlinuz-%{_kernel_release_name}
+cp -v System.map %{buildroot}/boot/System.map-%{_kernel_release_name}
+cp -v .config %{buildroot}/boot/config-%{_kernel_release_name}
+
+# Create the initial ramdisk (initramfs) using dracut
+dracut --force %{buildroot}/boot/initramfs-%{_kernel_release_name}.img %{_kernel_release_name}
+
+# Install user-space kernel headers
+# This goes to /usr/include, as expected by glibc and user-space programs
+make headers_install INSTALL_HDR_PATH=%{buildroot}/usr
+
+# Install files for kernel-devel package
+# This goes to /usr/src/kernels, as expected by external kernel module builders
+mkdir -p %{buildroot}/usr/src/kernels/%{_kernel_release_name}
+# Create a copy of the build tree's headers for the devel package
+cp -a include %{buildroot}/usr/src/kernels/%{_kernel_release_name}/
+cp -a Module.symvers %{buildroot}/usr/src/kernels/%{_kernel_release_name}/
+cp -a scripts %{buildroot}/usr/src/kernels/%{_kernel_release_name}/
+cp -a .config %{buildroot}/usr/src/kernels/%{_kernel_release_name}/
+cp -a Makefile %{buildroot}/usr/src/kernels/%{_kernel_release_name}/
+
+# Install firmware only if the 'firmware' directory exists
+# This handles the 'No such file or directory' error and is consistent
+# with the conditional packaging.
+if [ -d firmware ]; then
+ mkdir -p %{buildroot}/lib/firmware
+ find firmware -type f -exec install -Dm644 '{}' '%{buildroot}/lib/firmware/{}' ';'
+fi
+
+%post
+# Use grubby to add the new kernel to the bootloader
+grubby --add-kernel=/boot/vmlinuz-%{_kernel_release_name} \
+ --title="Linux Kernel %{_kernel_release_name}" \
+ --copy-default \
+ --make-default
+
+%postun
+# This handles both upgrade and erase
+grubby --remove-kernel=/boot/vmlinuz-%{_kernel_release_name}
+
+%files
+%defattr(-,root,root,-)
+/boot/vmlinuz-%{_kernel_release_name}
+/boot/System.map-%{_kernel_release_name}
+/boot/config-%{_kernel_release_name}
+/boot/initramfs-%{_kernel_release_name}.img
+/lib/modules/%{_kernel_release_name}/
+
+%files headers
+%defattr(-,root,root,-)
+/usr/include/
+
+%files devel
+%defattr(-,root,root,-)
+/usr/src/kernels/%{_kernel_release_name}/include/
+/usr/src/kernels/%{_kernel_release_name}/scripts/
+/usr/src/kernels/%{_kernel_release_name}/Module.symvers
+/usr/src/kernels/%{_kernel_release_name}/.config
+/usr/src/kernels/%{_kernel_release_name}/Makefile
+
+%if 0%{?with_firmware}
+%files firmware
+%defattr(-,root,root,-)
+/lib/firmware/
+%endif
+
+%changelog
+* Mon Aug 11 2025 Bhargavjit Bhuyan <example@example.com> - 6.16.0-1
+- Changed build configuration from 'defconfig' to a custom config based on the host kernel for a more complete build.
+* Mon Aug 11 2025 Bhargavjit Bhuyan <example@example.com> - 6.16.0-1
+- Fixed a critical issue by adding the dracut utility to generate the initramfs.
+- Added dracut to BuildRequires and the initramfs file to the main package files.
+* Sun Aug 10 2025 Bhargavjit Bhuyan <example@example.com> - 6.16.0-1
+- Trimmed non-essential build dependencies for a more focused build.
+- Removed subpackages for debuginfo, documentation, and tools.
+* Sun Aug 10 2025 FlyingSaturn <example@example.com> - 6.16-rc1
+- Made some changes

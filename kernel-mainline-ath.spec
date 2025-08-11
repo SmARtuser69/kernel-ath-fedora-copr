@@ -102,7 +102,7 @@ cp %{SOURCE0} ./.config
 # This ensures a more complete set of drivers and features are included.
 # : This assumes a config file exists for the host kernel.
 NPROCS=$(/usr/bin/getconf _NPROCESSORS_ONLN)
-make olddefconfig
+#make olddefconfig
 
 # Now build the kernel and modules with the complete configuration.
 make -j${NPROCS} bzImage

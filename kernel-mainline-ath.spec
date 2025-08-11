@@ -44,6 +44,7 @@ BuildRequires: b4
 BuildRequires: git
 BuildRequires: dracut
 BuildRequires: gpg
+BuildRequires: gnupg2
 
 ExclusiveArch: x86_64
 

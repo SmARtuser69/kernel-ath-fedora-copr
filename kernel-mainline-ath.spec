@@ -16,37 +16,35 @@
 %global _kernel_name kernel-mainline-ath
 %global _kernel_release_name %{version}-%{release}
 
-Name:           %{_kernel_name}
-Version:        %{kernel_version}
-Release:        %{release_version}%{?dist}
-Summary:        The Linux kernel (patched)
-License:        GPLv2 and others
-#Source0:        https://github.com/torvalds/linux/archive/refs/tags/v6.16.tar.gz
+Name:           %{_kernel_name}
+Version:        %{kernel_version}
+Release:        %{release_version}%{?dist}
+Summary:        The Linux kernel (patched)
+License:        GPLv2 and others
+#Source0:        https://github.com/torvalds/linux/archive/refs/tags/v6.16.tar.gz
 
 # Minimized list of essential BuildRequires for a core kernel and modules.
-BuildRequires:  gcc
-BuildRequires:  make
-BuildRequires:  python3
-BuildRequires:  bc
-BuildRequires:  elfutils-libelf-devel
-BuildRequires:  ncurses-devel
-BuildRequires:  openssl-devel
-BuildRequires:  rpm-build
-BuildRequires:  bison
-BuildRequires:  flex
-BuildRequires:  python3-devel
-BuildRequires:  grubby
-BuildRequires:  kmod
-BuildRequires:  xz
-BuildRequires:  zlib-devel
-BuildRequires:  glibc-devel
-BuildRequires:  b4
-BuildRequires:  git
-BuildRequires:  gnupg2
-BuildRequires:  rsync
+BuildRequires:  gcc
+BuildRequires:  make
+BuildRequires:  python3
+BuildRequires:  bc
+BuildRequires:  elfutils-libelf-devel
+BuildRequires:  ncurses-devel
+BuildRequires:  openssl-devel
+BuildRequires:  rpm-build
+BuildRequires:  bison
+BuildRequires:  flex
+BuildRequires:  python3-devel
+BuildRequires:  grubby
+BuildRequires:  kmod
+BuildRequires:  xz
+BuildRequires:  zlib-devel
+BuildRequires:  glibc-devel
+BuildRequires:  b4
+BuildRequires:  git
+BuildRequires:  dracut
 
-
-ExclusiveArch:  x86_64
+ExclusiveArch:  x86_64
 
 # Use a macro and shell test to conditionally set a value, which is
 # compatible with strict spec file parsers.
@@ -58,18 +56,18 @@ contains a specific build of the mainline kernel from the 'ath' git tree.
 
 # Kernel headers subpackage
 %package headers
-Summary:        Header files for the Linux kernel
-BuildArch:      noarch
-Provides:       kernel-headers = %{version}-%{release}
+Summary:        Header files for the Linux kernel
+BuildArch:      noarch
+Provides:       kernel-headers = %{version}-%{release}
 %description headers
 This package provides the kernel header files. These header files are used by
 glibc to build user-space applications.
 
 # Kernel devel subpackage
 %package devel
-Summary:        Development files for the Linux kernel
-Requires:       kernel-headers = %{version}-%{release}
-Provides:       kernel-devel = %{version}-%{release}
+Summary:        Development files for the Linux kernel
+Requires:       kernel-headers = %{version}-%{release}
+Provides:       kernel-devel = %{version}-%{release}
 %description devel
 This package provides the development files needed to build external kernel
 modules.
@@ -78,7 +76,7 @@ modules.
 %if 0%{?with_firmware}
 # Firmware subpackage
 %package firmware
-Summary:        Firmware files for the Linux kernel
+Summary:        Firmware files for the Linux kernel
 BuildArch: noarch
 %description firmware
 This package contains the firmware binary blobs required by the Linux kernel.
@@ -100,15 +98,13 @@ git apply aspm-patch.mbx
 # Use the default configuration and build the entire kernel and its modules
 # Note: This uses a generic 'defconfig' which may not be optimized.
 NPROCS=$(/usr/bin/getconf _NPROCESSORS_ONLN)
-cd linux
-make olddefconfig
+make defconfig
 make -j${NPROCS} bzImage
 make -j${NPROCS} modules
 
 %install
 # Install kernel modules
-cd linux
-make INSTALL_MOD_PATH=%{buildroot} KERNELRELEASE=%{_kernel_release_name} modules_install
+make INSTALL_MOD_PATH=%{buildroot} modules_install
 
 # Explicitly create boot directory
 mkdir -p %{buildroot}/boot
@@ -118,9 +114,13 @@ cp -v arch/x86/boot/bzImage %{buildroot}/boot/vmlinuz-%{_kernel_release_name}
 cp -v System.map %{buildroot}/boot/System.map-%{_kernel_release_name}
 cp -v .config %{buildroot}/boot/config-%{_kernel_release_name}
 
+# Create the initial ramdisk (initramfs) using dracut
+# This is a critical step for modern systems to boot correctly
+dracut --force %{buildroot}/boot/initramfs-%{_kernel_release_name}.img %{_kernel_release_name}
+
 # Install user-space kernel headers
 # This goes to /usr/include, as expected by glibc and user-space programs
-make headers_install INSTALL_HDR_PATH=%{buildroot}/usr KERNELRELEASE=%{_kernel_release_name}
+make headers_install INSTALL_HDR_PATH=%{buildroot}/usr
 
 # Install files for kernel-devel package
 # This goes to /usr/src/kernels, as expected by external kernel module builders
@@ -136,16 +136,16 @@ cp -a Makefile %{buildroot}/usr/src/kernels/%{_kernel_release_name}/
 # This handles the 'No such file or directory' error and is consistent
 # with the conditional packaging.
 if [ -d firmware ]; then
-  mkdir -p %{buildroot}/lib/firmware
-  find firmware -type f -exec install -Dm644 '{}' '%{buildroot}/lib/firmware/{}' ';'
+  mkdir -p %{buildroot}/lib/firmware
+  find firmware -type f -exec install -Dm644 '{}' '%{buildroot}/lib/firmware/{}' ';'
 fi
 
 %post
 # Use grubby to add the new kernel to the bootloader
 grubby --add-kernel=/boot/vmlinuz-%{_kernel_release_name} \
-       --title="Linux Kernel %{_kernel_release_name}" \
-       --copy-default \
-       --make-default
+       --title="Linux Kernel %{_kernel_release_name}" \
+       --copy-default \
+       --make-default
 
 %postun
 # This handles both upgrade and erase
@@ -156,6 +156,7 @@ grubby --remove-kernel=/boot/vmlinuz-%{_kernel_release_name}
 /boot/vmlinuz-%{_kernel_release_name}
 /boot/System.map-%{_kernel_release_name}
 /boot/config-%{_kernel_release_name}
+/boot/initramfs-%{_kernel_release_name}.img
 /lib/modules/%{_kernel_release_name}/
 
 %files headers
@@ -177,6 +178,9 @@ grubby --remove-kernel=/boot/vmlinuz-%{_kernel_release_name}
 %endif
 
 %changelog
+* Mon Aug 11 2025 Bhargavjit Bhuyan <example@example.com> - 6.16.0-1
+- Fixed a critical issue by adding the dracut utility to generate the initramfs.
+- Added dracut to BuildRequires and the initramfs file to the main package files.
 * Sun Aug 10 2025 Bhargavjit Bhuyan <example@example.com> - 6.16.0-1
 - Trimmed non-essential build dependencies for a more focused build.
 - Removed subpackages for debuginfo, documentation, and tools.

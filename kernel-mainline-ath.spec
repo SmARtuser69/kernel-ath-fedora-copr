@@ -43,6 +43,7 @@ BuildRequires: glibc-devel
 BuildRequires: b4
 BuildRequires: git
 BuildRequires: dracut
+BuildRequires: gpg
 
 ExclusiveArch: x86_64
 

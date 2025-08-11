@@ -42,6 +42,8 @@ BuildRequires:  zlib-devel
 BuildRequires:  glibc-devel
 BuildRequires:  b4
 BuildRequires:  git
+BuildRequires:  gnupg2
+BuildRequires:  rsync
 
 
 ExclusiveArch:  x86_64
@@ -98,13 +100,15 @@ git apply aspm-patch.mbx
 # Use the default configuration and build the entire kernel and its modules
 # Note: This uses a generic 'defconfig' which may not be optimized.
 NPROCS=$(/usr/bin/getconf _NPROCESSORS_ONLN)
-make defconfig
+cd linux
+make olddefconfig
 make -j${NPROCS} bzImage
 make -j${NPROCS} modules
 
 %install
 # Install kernel modules
-make INSTALL_MOD_PATH=%{buildroot} modules_install
+cd linux
+make INSTALL_MOD_PATH=%{buildroot} KERNELRELEASE=%{_kernel_release_name} modules_install
 
 # Explicitly create boot directory
 mkdir -p %{buildroot}/boot
@@ -116,7 +120,7 @@ cp -v .config %{buildroot}/boot/config-%{_kernel_release_name}
 
 # Install user-space kernel headers
 # This goes to /usr/include, as expected by glibc and user-space programs
-make headers_install INSTALL_HDR_PATH=%{buildroot}/usr
+make headers_install INSTALL_HDR_PATH=%{buildroot}/usr KERNELRELEASE=%{_kernel_release_name}
 
 # Install files for kernel-devel package
 # This goes to /usr/src/kernels, as expected by external kernel module builders

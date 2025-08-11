@@ -22,7 +22,7 @@ Release: %{release_version}%{?dist}
 Summary: The Linux kernel (patched)
 License: GPLv2 and others
 Source0: kernel-x86_64-fedora.config
-Source1: fix1.patch
+Patch0: fix1.patch
 
 # Minimized list of essential BuildRequires for a core kernel and modules.
 BuildRequires: gcc
@@ -97,6 +97,7 @@ git checkout -b aspm-patch 19272b37aa4f83ca52bdf9c16d5d81bdd1354494
 b4 am 20250716-ath-aspm-fix-v1-0-dd3e62c1b692@oss.qualcomm.com && mv *.mbx aspm-patch.mbx
 git apply aspm-patch.mbx
 cp %{SOURCE0} ./.config
+%patch0 -p1
 # pwd
 
 %build

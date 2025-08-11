@@ -21,7 +21,7 @@ Version: %{kernel_version}
 Release: %{release_version}%{?dist}
 Summary: The Linux kernel (patched)
 License: GPLv2 and others
-#Source0: https://github.com/torvalds/linux/archive/refs/tags/v6.16.tar.gz
+Source0: kernel-x86_64-fedora.config
 
 # Minimized list of essential BuildRequires for a core kernel and modules.
 BuildRequires: gcc
@@ -67,7 +67,7 @@ glibc to build user-space applications.
 
 # Kernel devel subpackage
 %package devel
-Summary:  Development files for the Linux kernel
+Summary:  Development files for the Linux kernel
 Requires: kernel-headers = %{version}-%{release}
 Provides: kernel-devel = %{version}-%{release}
 %description devel
@@ -95,12 +95,16 @@ cd linux
 git checkout -b aspm-patch 19272b37aa4f83ca52bdf9c16d5d81bdd1354494
 b4 am 20250716-ath-aspm-fix-v1-0-dd3e62c1b692@oss.qualcomm.com && mv *.mbx aspm-patch.mbx
 git apply aspm-patch.mbx
+cp %{SOURCE0} ./.config
 
 %build
-# Use the default configuration and build the entire kernel and its modules
-# Note: This uses a generic 'defconfig' which may not be optimized.
+# Use the configuration from the currently running kernel as a base.
+# This ensures a more complete set of drivers and features are included.
+# : This assumes a config file exists for the host kernel.
 NPROCS=$(/usr/bin/getconf _NPROCESSORS_ONLN)
-make defconfig
+make olddefconfig
+
+# Now build the kernel and modules with the complete configuration.
 make -j${NPROCS} bzImage
 make -j${NPROCS} modules
 
@@ -138,16 +142,16 @@ cp -a Makefile %{buildroot}/usr/src/kernels/%{_kernel_release_name}/
 # This handles the 'No such file or directory' error and is consistent
 # with the conditional packaging.
 if [ -d firmware ]; then
- mkdir -p %{buildroot}/lib/firmware
- find firmware -type f -exec install -Dm644 '{}' '%{buildroot}/lib/firmware/{}' ';'
+ mkdir -p %{buildroot}/lib/firmware
+ find firmware -type f -exec install -Dm644 '{}' '%{buildroot}/lib/firmware/{}' ';'
 fi
 
 %post
 # Use grubby to add the new kernel to the bootloader
 grubby --add-kernel=/boot/vmlinuz-%{_kernel_release_name} \
- --title="Linux Kernel %{_kernel_release_name}" \
- --copy-default \
- --make-default
+ --title="Linux Kernel %{_kernel_release_name}" \
+ --copy-default \
+ --make-default
 
 %postun
 # This handles both upgrade and erase
@@ -180,6 +184,8 @@ grubby --remove-kernel=/boot/vmlinuz-%{_kernel_release_name}
 %endif
 
 %changelog
+* Mon Aug 11 2025 Bhargavjit Bhuyan <example@example.com> - 6.16.0-1
+- Changed build configuration from 'defconfig' to a custom config based on the host kernel for a more complete build.
 * Mon Aug 11 2025 Bhargavjit Bhuyan <example@example.com> - 6.16.0-1
 - Fixed a critical issue by adding the dracut utility to generate the initramfs.
 - Added dracut to BuildRequires and the initramfs file to the main package files.

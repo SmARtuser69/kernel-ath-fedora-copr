@@ -96,6 +96,7 @@ git checkout -b aspm-patch 19272b37aa4f83ca52bdf9c16d5d81bdd1354494
 b4 am 20250716-ath-aspm-fix-v1-0-dd3e62c1b692@oss.qualcomm.com && mv *.mbx aspm-patch.mbx
 git apply aspm-patch.mbx
 cp %{SOURCE0} ./.config
+pwd
 
 %build
 # Use the configuration from the currently running kernel as a base.
@@ -103,7 +104,7 @@ cp %{SOURCE0} ./.config
 # : This assumes a config file exists for the host kernel.
 NPROCS=$(/usr/bin/getconf _NPROCESSORS_ONLN)
 #make olddefconfig
-make prepare
+make olddefconfig
 
 # Now build the kernel and modules with the complete configuration.
 make -j${NPROCS} bzImage

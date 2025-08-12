@@ -22,7 +22,7 @@ Release: %{release_version}%{?dist}
 Summary: The Linux kernel (patched)
 License: GPLv2 and others
 Source0: kernel-x86_64-fedora.config
-#Patch0: fix1.patch
+Patch0: fix1.patch
 
 # Minimized list of essential BuildRequires for a core kernel and modules.
 BuildRequires: gcc
@@ -97,7 +97,9 @@ git checkout -b aspm-patch 19272b37aa4f83ca52bdf9c16d5d81bdd1354494
 b4 am 20250716-ath-aspm-fix-v1-0-dd3e62c1b692@oss.qualcomm.com && mv *.mbx aspm-patch.mbx
 git apply aspm-patch.mbx
 cp %{SOURCE0} ./.config
-#%patch 0 -p1
+# The following line will output the content of the file. Please provide this output in the logs.
+cat drivers/net/wireless/ath/ath11k/wmi.c
+%patch 0 -p1
 # pwd
 
 %build
@@ -151,16 +153,16 @@ cp -a Makefile %{buildroot}/usr/src/kernels/%{_kernel_release_name}/
 # This handles the 'No such file or directory' error and is consistent
 # with the conditional packaging.
 if [ -d firmware ]; then
- mkdir -p %{buildroot}/lib/firmware
- find firmware -type f -exec install -Dm644 '{}' '%{buildroot}/lib/firmware/{}' ';'
+ mkdir -p %{buildroot}/lib/firmware
+ find firmware -type f -exec install -Dm644 '{}' '%{buildroot}/lib/firmware/{}' ';'
 fi
 
 %post
 # Use grubby to add the new kernel to the bootloader
 grubby --add-kernel=/boot/vmlinuz-%{_kernel_release_name} \
- --title="Linux Kernel %{_kernel_release_name}" \
- --copy-default \
- --make-default
+ --title="Linux Kernel %{_kernel_release_name}" \
+ --copy-default \
+ --make-default
 
 %postun
 # This handles both upgrade and erase

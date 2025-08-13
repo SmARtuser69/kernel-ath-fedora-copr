@@ -54,9 +54,9 @@ the 'ath-next' branch, intended for testing wireless drivers.
 
 %prep
 
-The Source0 tarball is named 'ath.git-ath-next.tar.gz' and unpacks to a directory
-with a similar name. Using '%setup -q' without the '-n' flag is more robust
-as it handles the directory name automatically.
+#The Source0 tarball is named 'ath.git-ath-next.tar.gz' and unpacks to a directory
+#with a similar name. Using '%setup -q' without the '-n' flag is more robust
+#as it handles the directory name automatically.
 %setup -q
 cp %{SOURCE1} .config
 

@@ -22,7 +22,7 @@ Release: %{release_version}%{?dist}
 Summary: The Linux kernel (patched)
 License: GPLv2 and others
 Source0: https://git.kernel.org/pub/scm/linux/kernel/git/ath/ath.git/snapshot/ath-next.tar.gz
-Source1: kernel-x86_64-fedora.config
+#Source1: kernel-x86_64-fedora.config
 # Your patch fix1.patch is already included in the aspm patchset and is not needed.
 # Patch0: fix1.patch
 
@@ -98,7 +98,7 @@ This package contains the firmware binary blobs required by the Linux kernel.
 #git checkout -b aspm-patch 19272b37aa4f83ca52bdf9c16d5d81bdd1354494
 #b4 am 20250716-ath-aspm-fix-v1-0-dd3e62c1b692@oss.qualcomm.com && mv *.mbx aspm-patch.mbx
 #git apply aspm-patch.mbx
-cp %{SOURCE1} ./.config
+#cp %{SOURCE1} ./.config
 %autosetup -n ath-next
 # pwd
 
@@ -109,7 +109,7 @@ cp %{SOURCE1} ./.config
 NPROCS=$(/usr/bin/getconf _NPROCESSORS_ONLN)
 
 # Use the configuration from the custom config file.
-make olddefconfig
+make defconfig
 
 # Now build the kernel and modules with the complete configuration.
 # The V=1 flag is added to provide verbose output, which should reveal the underlying

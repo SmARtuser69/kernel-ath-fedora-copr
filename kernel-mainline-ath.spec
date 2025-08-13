@@ -130,29 +130,11 @@ modules against this specific kernel version.
 
 %prep
 
-# SETUP: Use a specific directory for clarity
-
 git clone https://github.com/torvalds/linux.git
-
 cd linux
-
-
-
-# Checkout the specific commit directly.
-
-git checkout -f 19272b37aa4f83ca52bdf9c16d5d81bdd1354494
-
-
-
-# CORRECTED: Use 'git am' to apply the mailbox patch correctly.
-
-# This preserves commit history and authorship from the patch.
-
-b4 am 20250716-ath-aspm-fix-v1-0-dd3e62c1b692@oss.qualcomm.com
-
-git am *.mbx
-
-
+git checkout -b aspm-patch 19272b37aa4f83ca52bdf9c16d5d81bdd1354494
+b4 am 20250716-ath-aspm-fix-v1-0-dd3e62c1b692@oss.qualcomm.com && mv *.mbx aspm-patch.mbx
+git apply aspm-patch.mbx
 
 %build
 

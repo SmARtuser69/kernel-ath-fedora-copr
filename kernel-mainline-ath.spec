@@ -50,7 +50,7 @@ Summary: The Linux kernel (patched for x86_64)
 
 License: GPLv2 and others
 
-Source0: https://github.com/torvalds/linux
+#Source0: https://github.com/torvalds/linux
 
 
 
@@ -132,7 +132,9 @@ modules against this specific kernel version.
 
 # SETUP: Use a specific directory for clarity
 
-%setup -q -n linux
+git clone https://github.com/torvalds/linux.git
+
+cd linux
 
 
 
@@ -155,6 +157,7 @@ git am *.mbx
 %build
 
 # Use the default configuration and build the kernel and its modules
+cd linux
 
 make defconfig
 
@@ -171,7 +174,7 @@ make -j${NPROCS} modules
 
 
 %install
-
+cd linux
 # Install kernel modules
 
 make INSTALL_MOD_PATH=%{buildroot} KERNELRELEASE=%{kernel_release} modules_install

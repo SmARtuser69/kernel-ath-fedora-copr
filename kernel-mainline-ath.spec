@@ -69,7 +69,7 @@ glibc to build user-space applications.
 
 # Kernel devel subpackage
 %package devel
-Summary:  Development files for the Linux kernel
+Summary:  Development files for the Linux kernel
 Requires: kernel-headers = %{version}-%{release}
 Provides: kernel-devel = %{version}-%{release}
 %description devel

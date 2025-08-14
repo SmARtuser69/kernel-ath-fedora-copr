@@ -118,7 +118,7 @@ rsync -a \
     --exclude='*' \
     ./ %{buildroot}/usr/src/kernels/%{kernel_release}/
 # Generate the initial RAM disk (initramfs) using dracut
-dracut --force -v --kver %{kernel_release} %{buildroot}/boot/initramfs-%{kernel_release}.img > dracut.log 2>&1
+#dracut --force -v --kver %{kernel_release} %{buildroot}/boot/initramfs-%{kernel_release}.img > dracut.log 2>&1
 
 %post
 # Use grubby to add the new kernel to the bootloader, including the initramfs

@@ -90,15 +90,16 @@ cp -v System.map %{buildroot}/boot/System.map-%{kernel_release}
 cp -v .config %{buildroot}/boot/config-%{kernel_release}
 # Install files for kernel-devel package
 # This correctly includes architecture-specific files needed for module builds.
-rsync -a ./%{buildroot}/usr/src/kernels/%{kernel_release}/ \
- --include='Makefile' \
- --include='Module.symvers' \
- --include='.config' \
- --include='include/***' \
- --include='scripts/***' \
- --include='arch/x86/include/***' \
- --include='arch/x86/Makefile' \
- --exclude='*'
+rsync -a \
+  --include='Makefile' \
+  --include='Module.symvers' \
+  --include='.config' \
+  --include='include/***' \
+  --include='scripts/***' \
+  --include='arch/x86/include/***' \
+  --include='arch/x86/Makefile' \
+  --exclude='*' \
+  ./ %{buildroot}/usr/src/kernels/%{kernel_release}/
 
 %post
 # Use grubby to add the new kernel to the bootloader

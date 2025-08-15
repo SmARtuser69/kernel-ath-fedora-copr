@@ -21,7 +21,6 @@ Version: %{kernel_version}
 Release: %{release_version}%{?dist}
 Summary: The Linux kernel (patched for x86_64)
 License: GPLv2 and others
-Source0: kernel-x86_64-fedora.config
 
 # Minimized list of essential BuildRequires for a core kernel and modules.
 BuildRequires: gcc

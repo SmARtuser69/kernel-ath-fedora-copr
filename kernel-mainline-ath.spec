@@ -67,9 +67,12 @@ make olddefconfig
 BUILD_DATE=$(date +%Y%m%d)
 make -j$(nproc) rpm-pkg LOCALVERSION=-patchtest${BUILD_DATE}
 
+%install
+mkdir -p %{buildroot}/output
+cp linux/*.rpm %{buildroot}/output/
+
 %files
-%defattr(-,root,root,-)
-*.rpm
+/output/*.rpm
 
 %changelog
 * Wed Aug 14 2025 Gemini <ai@google.com> - 6.16.0-1

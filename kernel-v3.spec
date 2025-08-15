@@ -47,7 +47,7 @@ BuildRequires: rpmdevtools
 BuildRequires: rpmlint
 
 # CONFIRMED: Build is exclusively for x86_64.
-ExclusiveArch: x86_64
+ExclusiveArch: x86_64 aarch64
 
 %prep
 git clone https://github.com/torvalds/linux.git

@@ -52,8 +52,8 @@ ExclusiveArch: x86_64 aarch64
 %prep
 git clone https://github.com/torvalds/linux.git
 cd linux
-git config --global user.name "FlyingSaturn"
-git config --global user.email "56539009+FlyingSaturn@users.noreply.github.com"
+git config --global user.name "Bhargav"
+git config --global user.email "56539009+SmARtuser69@users.noreply.github.com"
 git checkout -b aspm-patch 19272b37aa4f83ca52bdf9c16d5d81bdd1354494
 b4 am 20250716-ath-aspm-fix-v1-0-dd3e62c1b692@oss.qualcomm.com && mv *.mbx aspm-patch.mbx
 git apply aspm-patch.mbx
@@ -68,11 +68,12 @@ BUILD_DATE=$(date +%Y%m%d)
 make -j$(nproc) rpm-pkg LOCALVERSION=-patchtest${BUILD_DATE}
 
 %install
-mkdir -p %{buildroot}/output
-cp linux/*.rpm %{buildroot}/output/
+#mkdir -p %{buildroot}/output
+mkdir -p /kernelfiles
+cp linux/*.rpm /kernelfiles
 
 %files
-/output/*.rpm
+/kernelfiles/*.rpm
 
 %changelog
 * Wed Aug 14 2025 Gemini <ai@google.com> - 6.16.0-1

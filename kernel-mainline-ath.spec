@@ -61,8 +61,8 @@ git apply aspm-patch.mbx
 %build
 # Use the default configuration and build the kernel and its modules
 cd linux
-cp %{SOURCE0} ./.config
-make olddefconfig
+#cp %{SOURCE0} ./.config
+make defconfig
 #NPROCS=$(/usr/bin/getconf _NPROCESSORS_ONLN)
 BUILD_DATE=$(date +%Y%m%d)
 make -j$(nproc) rpm-pkg LOCALVERSION=-patchtest${BUILD_DATE}
